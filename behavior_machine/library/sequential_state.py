@@ -1,14 +1,15 @@
 import threading
 from ..core import StateStatus, State, NestedState
 from ..board import Board
+import typing
 
 class SequentialState(NestedState):
 
-    _children: list
+    _children: typing.List[State]
     _curr_child: State
     _lock: threading.RLock
 
-    def __init__(self, name, children: list = None):
+    def __init__(self, name, children: typing.List[State] = None):
         super(SequentialState, self).__init__(name)
         self._children = [] if children == None else children
         self._curr_child = None
@@ -59,3 +60,11 @@ class SequentialState(NestedState):
             with self._lock:
                 self._curr_child.tick(board)
         return next_state
+
+    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
+        
+        self_info = super().get_debug_info()
+        self_info['children'] = []
+        for child in self._children:
+            self_info['children'].append(child.get_debug_info())
+        return self_info

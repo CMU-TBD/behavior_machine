@@ -133,3 +133,21 @@ def test_parallel_state_performance(capsys):
     duration = time.time() - start_time
     assert duration < 2 # as long as its not too slow, we are fine.
     assert not pm._run_thread.isAlive()
+
+
+def test_parallel_debug_info():
+    w1 = WaitState('w1', 1)
+    w2 = WaitState('w2', 1)
+    pm = ParallelState("pm",[w1, w2])
+    pm.start(None)
+    pm.wait(0.1)
+    info = pm.get_debug_info()
+    assert info['name'] == 'pm'
+    assert len(info['children']) == 2
+    assert info['children'][0]['name'] == 'w1'
+    assert info['children'][0]['status'] == StateStatus.RUNNING
+    assert info['children'][1]['name'] == 'w2'
+    assert info['children'][1]['status'] == StateStatus.RUNNING
+    pm.wait(1)
+    pm.tick(None)
+    pm.wait(0.1)

@@ -6,6 +6,7 @@ import time
 import sys
 import traceback
 import threading
+from .logging import logger
 
 from .board import Board
 
@@ -195,6 +196,13 @@ class State():
             print(f"INTERNAL EXCEPTION {type(self._internal_exception)}")
             print(''.join(traceback.TracebackException.from_exception(self._internal_exception).format()))
 
+    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
+        return {
+            'name':self._name,
+            'type':type(self).__name__,
+            'status':self._status
+        }
+
 class NestedState(State):
 
     _exception_raised_state_name: str # The name of thrown state
@@ -238,6 +246,7 @@ class NestedState(State):
         if self._internal_exception is not None:
             print(self._exception_raised_state_name)
 
+
 class Machine(NestedState):
 
     _root : State # Starting state
@@ -245,13 +254,17 @@ class Machine(NestedState):
     _started: bool # Whether the state machine has started 
     _end_state_ids: list # IDs of end states
     _rate: float # Rate to tick
+    _debug_flag: bool
+    _debug_cb: typing.Callable[[typing.Dict[str, typing.Any]], None]
 
-    def __init__(self, name, root, end_state_ids = None, rate = 1.0):
+    def __init__(self, name, root, end_state_ids = None, rate = 1.0, debug: bool = False, debug_cb = None):
         self._root = root
         self._curr_state = root
         self._started = False
         self._end_state_ids = [] if end_state_ids == None else end_state_ids
         self._rate = 1.0/rate
+        self._debug_flag = debug
+        self._debug_cb = debug_cb
         super(Machine, self).__init__(name)
 
     def start(self, board: Board, manual_exec=False) -> None:
@@ -272,6 +285,18 @@ class Machine(NestedState):
             time.sleep(self._rate)
             # check the internal states
             self.update(board)
+            # we publish any debug information if requested
+            if self._debug_flag:
+                # get debug info
+                debug_info = self.get_debug_info()
+                # we print it to our output
+                parsed_info = logger.parse_debug_info(debug_info, prefix=f"[Base] ")
+                # call the cb if we have it
+                if self._debug_cb != None:
+                    self._debug_cb(debug_info, parsed_info)
+                #print it
+                logger.print(('\n').join(parsed_info))
+
             # quit if we reach an end state & the state has ended
             if self.is_end():
                 return StateStatus.SUCCESS
@@ -332,3 +357,9 @@ class Machine(NestedState):
         # call interrupt for the nested class
         self._curr_state.interrupt()
         super().interrupt()
+
+    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
+        
+        self_info = super().get_debug_info()
+        self_info['children'] = [self._curr_state.get_debug_info()]
+        return self_info

@@ -186,3 +186,19 @@ def test_machine_with_exception_in_transition_with_zombie_states(capsys):
     assert not mac._run_thread.isAlive()
     assert not ws1._run_thread.isAlive()
     assert is2._run_thread == None #Never reach it
+
+
+def test_debugging_machine(capsys):
+
+    from behavior_machine import logging    
+    logging.add_fs('capsys', sys.stdout)
+    s1 = WaitState('s1',1.1)
+    s2 = DummyState('s2')
+    s1.add_transition_on_success(s2)
+    mac = Machine("mac", s1, ["s2"], debug=True, rate=1)
+    mac.run()
+    assert mac.is_end()
+    assert capsys.readouterr().out == ("[Base] mac(Machine) -- RUNNING\n"
+                                       "  -> s1(WaitState) -- RUNNING\n"
+                                       "[Base] mac(Machine) -- RUNNING\n" 
+                                       "  -> s2(DummyState) -- SUCCESS\n")

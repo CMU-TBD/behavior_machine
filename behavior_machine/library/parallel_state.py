@@ -105,3 +105,11 @@ class ParallelState(NestedState):
             # This is bad.. meaning there are bunch of zombie threads running about
             print(f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. Zombie threads likely", file=sys.stderr)
         return next_state
+
+    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
+        
+        self_info = super().get_debug_info()
+        self_info['children'] = []
+        for child in self._children:
+            self_info['children'].append(child.get_debug_info())
+        return self_info

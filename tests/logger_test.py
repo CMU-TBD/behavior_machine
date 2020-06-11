@@ -16,3 +16,18 @@ def test_logger_print(capsys):
 def test_remove_none_exist_fs():
     with pytest.raises(KeyError):
         logging.remove_fs('capsys')
+
+
+def test_parse_debug_info():
+
+    from behavior_machine.library import SequentialState, IdleState, WaitState
+    from behavior_machine.core import Machine
+
+    s1 = IdleState('s1')
+    s2 = WaitState('s2',0.1)
+    s3 = WaitState('s3',0.1)
+    exe = Machine('exe', s1)
+    info = exe.get_debug_info()
+    parse_str = logging.parse_debug_info(info)
+    assert parse_str[0] == 'exe(Machine) -- UNKNOWN'
+    assert parse_str[1] == '  -> s1(IdleState) -- UNKNOWN'

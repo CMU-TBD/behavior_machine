@@ -88,15 +88,15 @@ def test_sequential_state_success(capsys):
     ps1 = PrintState("ps1", "Print1") 
     ps2 = PrintState("ps2", "Print2") 
     es = IdleState("es")
-    ss = SequentialState("sm", children=[ps1, ps2])
-    ss.add_transition_on_success(es)
-    exe = Machine("m1", ss, ['es'])
+    seqs = SequentialState("sm", children=[ps1, ps2])
+    seqs.add_transition_on_success(es)
+    exe = Machine("m1", seqs, ['es'])
     exe.run()
 
     assert capsys.readouterr().out == "Print1\nPrint2\n"
     assert exe.is_end()
     assert exe._curr_state == es
-    assert ss._status == StateStatus.SUCCESS
+    assert seqs._status == StateStatus.SUCCESS
     assert ps1._status == StateStatus.SUCCESS
     assert ps2._status == StateStatus.SUCCESS
 
@@ -129,3 +129,22 @@ def test_interruption_in_machines_with_sequential_state(capsys):
     assert ps1._status == StateStatus.UNKNOWN
     assert ws2.checkStatus(StateStatus.INTERRUPTED)
     assert ws1.checkStatus(StateStatus.SUCCESS)
+
+def test_sequential_debug_info():
+    w1 = WaitState('w1', 1)
+    w2 = WaitState('w2', 1)
+    seqs = SequentialState('seqs', [w1, w2])
+    seqs.start(None)
+    seqs.wait(0.1)
+    info = seqs.get_debug_info()
+    assert info['name'] == 'seqs'
+    assert len(info['children']) == 2
+    assert info['children'][0]['name'] == 'w1'
+    assert info['children'][0]['status'] == StateStatus.RUNNING
+    assert info['children'][1]['name'] == 'w2'
+    assert info['children'][1]['status'] == StateStatus.UNKNOWN
+    seqs.wait(1)
+    info = seqs.get_debug_info()
+    assert info['children'][0]['status'] == StateStatus.SUCCESS
+    assert info['children'][1]['status'] == StateStatus.RUNNING
+    seqs.wait()

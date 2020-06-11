@@ -50,3 +50,15 @@ def test_exception_base(capsys):
     t.start(None)
     assert str(t._internal_exception) == error_text
     assert t._status == StateStatus.EXCEPTIION
+
+def test_debug_info():
+
+    class StateName1(State):
+        def execute(self, board):
+            return StateStatus.SUCCESS
+
+    s = StateName1('s1')
+    info = s.get_debug_info()
+    assert info.get('name') == 's1'
+    assert info.get('status') == StateStatus.UNKNOWN
+    assert info.get('type') == "StateName1"    

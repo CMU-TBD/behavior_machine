@@ -4,8 +4,8 @@ import io
 import pytest
 
 from behavior_machine.board import Board
-from behavior_machine.core import *
-from behavior_machine.library import *
+from behavior_machine.core import State, StateStatus, Machine
+from behavior_machine.library import WaitState, IdleState, PrintState
 
 
 def test_print_state(capsys):
@@ -29,10 +29,11 @@ def test_wait_state():
     exe = Machine("test", s1, end_state_ids=['s2'], rate=10)
 
     start_time = time.time()
-    exe.run()    
+    exe.run()
     duration = time.time() - start_time
     # Because the waut these are executed, its hard to know the margin
-    assert duration == pytest.approx(2,rel=0.1)
+    assert duration == pytest.approx(2, rel=0.1)
+
 
 def test_wait_state_with_interrupt():
 
@@ -43,5 +44,5 @@ def test_wait_state_with_interrupt():
     s1.wait()
     duration = time.time() - start_time
     # Because the waut these are executed, its hard to know the margin
-    assert duration == pytest.approx(0.0, abs=1e-3) # should be really close to zero because we interrupt immediately after it started.
-    
+    # should be really close to zero because we interrupt immediately after it started.
+    assert duration == pytest.approx(0.0, abs=1e-3)

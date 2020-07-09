@@ -1,11 +1,13 @@
 from ..core import StateStatus, State
 
+
 class PrintState(State):
-    
-    _text : str 
+
+    _text: str
+
     def __init__(self, name: str, text: str):
         """Constructor for PrintState
-        
+
         Parameters
         ----------
         name : str

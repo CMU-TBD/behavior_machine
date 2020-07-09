@@ -4,6 +4,7 @@ from ..board import Board
 import typing
 import sys
 
+
 class ParallelState(NestedState):
 
     _children: typing.List[State]
@@ -13,12 +14,11 @@ class ParallelState(NestedState):
 
     def __init__(self, name, children: list = None):
         super(ParallelState, self).__init__(name)
-        self._children = [] if children == None else children
+        self._children = [] if children is None else children
         self._children_complete_event = threading.Event()
-        self._child_exception = False 
+        self._child_exception = False
 
-
-    def add_children(self, state : State):
+    def add_children(self, state: State):
         self._children.append(state)
 
     def interrupt(self, timeout=None):
@@ -37,8 +37,7 @@ class ParallelState(NestedState):
         # we wait for the main thread to stop
         self._run_thread.join(timeout)
         return not self._run_thread.isAlive()
-        #return super().interrupt(timeout=timeout)
-
+        # return super().interrupt(timeout=timeout)
 
     def execute(self, board: Board):
 
@@ -48,10 +47,10 @@ class ParallelState(NestedState):
 
         # execute all the children as new threads
         for child in self._children:
-            # start the children, because 
+            # start the children, because
             # each child starts their own thread, no extra management required
             child.start(board)
-        
+
         # we delegate the checking of children state to the tick function OR execute, we wait here
         self._children_complete_event.wait()
 
@@ -69,7 +68,7 @@ class ParallelState(NestedState):
                     self.propergate_exception_information(child)
             # return the exception state
             return StateStatus.EXCEPTIION
-        
+
         # check the state of all the children & return success if and only if all are successful
         all_success = True
         for child in self._children:
@@ -103,5 +102,15 @@ class ParallelState(NestedState):
         if not self.interrupt():
             # we wasn't able to complete the interruption.
             # This is bad.. meaning there are bunch of zombie threads running about
-            print(f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. Zombie threads likely", file=sys.stderr)
+            print(
+                f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
+                    Zombie threads likely", file=sys.stderr)
         return next_state
+
+    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
+
+        self_info = super().get_debug_info()
+        self_info['children'] = []
+        for child in self._children:
+            self_info['children'].append(child.get_debug_info())
+        return self_info

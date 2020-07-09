@@ -18,12 +18,12 @@ def test_parallel_state_individual(capsys):
     pm.start(None)
     # wait for one second outside
     time.sleep(1)
-    pm.tick(None) # ticks to force event flags if any
+    pm.tick(None)  # ticks to force event flags if any
     assert not pm.wait(0.1)
     assert pm.checkStatus(StateStatus.RUNNING)
     # at this point ws should be done but ws2 is still going
     time.sleep(1.1)
-    pm.tick(None) # ticks to force event flags if any
+    pm.tick(None)  # ticks to force event flags if any
     # wait
     assert pm.wait(0.1)
     assert not pm.checkStatus(StateStatus.RUNNING)
@@ -51,6 +51,7 @@ def test_parallel_state_in_machine(capsys):
     assert exe.checkStatus(StateStatus.SUCCESS)
     assert not pm._run_thread.isAlive()
 
+
 def test_parallel_one_state_fails(capsys):
 
     class FailAfter1SecState(State):
@@ -65,7 +66,8 @@ def test_parallel_one_state_fails(capsys):
     pm = ParallelState('pm', [ws, fs])
     pm.add_transition_on_success(es)
     pm.add_transition_on_failed(fes)
-    exe = Machine("main_machine", pm, end_state_ids=['es','fs-terminal'], rate=10)
+    exe = Machine("main_machine", pm, end_state_ids=[
+                  'es', 'fs-terminal'], rate=10)
 
     # run machine and see how it reacts
     exe.start(None)
@@ -82,7 +84,8 @@ def test_parallel_one_state_fails(capsys):
 
 def test_exception_in_parallel_state(capsys):
 
-    error_text ="IndexErrorInTestEXCEPTION"
+    error_text = "IndexErrorInTestEXCEPTION"
+
     class RaiseExceptionState(State):
         def execute(self, board):
             raise IndexError(error_text)
@@ -95,7 +98,7 @@ def test_exception_in_parallel_state(capsys):
     exe = Machine("xe", pm, end_state_ids=['es', 'onException'], rate=10)
     # run machine and see how it reacted
     exe.start(None)
-    exe.wait(0.5) 
+    exe.wait(0.5)
     assert exe._curr_state == pm
     assert exe.checkStatus(StateStatus.EXCEPTIION)
     assert str(exe._internal_exception) == error_text
@@ -109,14 +112,16 @@ def test_interrupt_in_parallel_state(capsys):
     es = IdleState("es")
     pm = ParallelState('pm', [ws, ws2])
     pm.add_transition_on_success(es)
-    pm.add_transition(lambda x,y: True, es) 
+    pm.add_transition(lambda x, y: True, es)
     exe = Machine("main_machine", pm, end_state_ids=['es'], rate=10)
     # run machine
     exe.start(None)
-    assert exe.wait(0.2) # because of the always transition, it should happen in about 10
+    # because of the always transition, it should happen in about 10
+    assert exe.wait(0.2)
     assert ws.checkStatus(StateStatus.INTERRUPTED)
-    assert ws2.checkStatus(StateStatus.INTERRUPTED) 
-    assert not pm._run_thread.isAlive() 
+    assert ws2.checkStatus(StateStatus.INTERRUPTED)
+    assert not pm._run_thread.isAlive()
+
 
 def test_parallel_state_performance(capsys):
 
@@ -131,5 +136,23 @@ def test_parallel_state_performance(capsys):
     pm.wait()
     exe.interrupt()
     duration = time.time() - start_time
-    assert duration < 2 # as long as its not too slow, we are fine.
+    assert duration < 2  # as long as its not too slow, we are fine.
     assert not pm._run_thread.isAlive()
+
+
+def test_parallel_debug_info():
+    w1 = WaitState('w1', 1)
+    w2 = WaitState('w2', 1)
+    pm = ParallelState("pm", [w1, w2])
+    pm.start(None)
+    pm.wait(0.1)
+    info = pm.get_debug_info()
+    assert info['name'] == 'pm'
+    assert len(info['children']) == 2
+    assert info['children'][0]['name'] == 'w1'
+    assert info['children'][0]['status'] == StateStatus.RUNNING
+    assert info['children'][1]['name'] == 'w2'
+    assert info['children'][1]['status'] == StateStatus.RUNNING
+    pm.wait(1)
+    pm.tick(None)
+    pm.wait(0.1)

@@ -1,11 +1,11 @@
 from ..core import StateStatus, State
-import time
+
 
 class IdleState(State):
-    
+
     def __init__(self, name: str):
         """Constructor for IdleState
-        
+
         Parameters
         ----------
         name : str
@@ -17,7 +17,6 @@ class IdleState(State):
         return StateStatus.RUNNING
 
 
-
 class WaitState(State):
     """
     State that waits for X seconds before continuing
@@ -25,6 +24,7 @@ class WaitState(State):
 
     _duration: float
     _check_interval: float
+
     def __init__(self, name: str, duration: float):
         """Constructor for WaitState
 

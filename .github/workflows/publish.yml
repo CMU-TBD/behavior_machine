@@ -16,19 +16,23 @@ jobs:
     runs-on: ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
     - name: Checkout
       uses: actions/checkout@v2.2.0
       with:
         path: .
     - name: Install dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        pip3 install setuptools wheel twine
-        pip3 install -e .
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+        pip install -e .
     - name: Build 
       run: |
         cd behavior_machine
-        python3 setup.py sdist bdist_wheel
+        python setup.py sdist bdist_wheel
     - name: Publish a Python distribution to PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:

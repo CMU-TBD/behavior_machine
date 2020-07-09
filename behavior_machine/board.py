@@ -2,8 +2,9 @@
 import threading
 import typing
 
+
 class Board():
-    
+
     def __init__(self):
         self._map = {}
         self._lock = threading.RLock()

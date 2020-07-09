@@ -5,6 +5,14 @@
 - `get_debug_info` that returns a dict that contains debugging informations
 - debug flag and callback for `Machine` that quaries all child states for information. This provide snapshot of the current states. It doesn't give the full graph due to transitions
 - Tests for all those info
+- Name of threads now reflect the name of the state running it. This ease debugging.
+
+#### Changed
+- Reformat the code to follow PEP8 Standard.
+
+#### Fixed
+- Bug where the `interrupt` function in the `machine` has a different method parameter than the base.
+- Bug where when interrupting a machine type, nothing is returned.
 
 ## [0.2.0] - 2020-05-27
 #### Added

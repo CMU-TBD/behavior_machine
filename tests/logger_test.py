@@ -24,8 +24,6 @@ def test_parse_debug_info():
     from behavior_machine.core import Machine
 
     s1 = IdleState('s1')
-    s2 = WaitState('s2',0.1)
-    s3 = WaitState('s3',0.1)
     exe = Machine('exe', s1)
     info = exe.get_debug_info()
     parse_str = logging.parse_debug_info(info)

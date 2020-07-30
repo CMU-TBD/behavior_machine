@@ -95,6 +95,22 @@ def test_end_case():
     assert exe.is_end()
 
 
+# This test checks if machine is completed (is_end()) 
+# only after the endState finish execution.
+def test_end_case_delay(capsys):
+    ps1 = PrintState("ps1", "Hello World")
+    class EndState(State):
+        def execute(self, board):
+            time.sleep(0.5)
+            print('completed')
+            return StateStatus.SUCCESS
+    es = EndState('endState')
+    ps1.add_transition_on_success(es)
+    exe = Machine("xe", ps1, end_state_ids=["endState"], rate=10)
+    exe.run()
+    assert exe.is_end()
+    assert capsys.readouterr().out == "Hello World\ncompleted\n"
+
 def test_machine_rate_slow():
     ps1 = PrintState("ps1", "print1")  # execute at second 0
     ps2 = PrintState("ps1", "print2")  # execute at second 2

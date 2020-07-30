@@ -3,6 +3,7 @@ import threading
 import typing
 import copy
 
+
 class Board():
 
     def __init__(self):
@@ -31,7 +32,6 @@ class Board():
             else:
                 return self._map.get(key, None)
 
-
     def set(self, key: str, value: typing.Any, deep_copy: bool = True) -> None:
         """Save the object with the given key in the board. By default, a deep copy
         of the object is made. You can change this by setting deep_copy = False.
@@ -52,9 +52,7 @@ class Board():
                 self._map[key] = copy.deepcopy(value)
             else:
                 self._map[key] = value
-
-
-    def exist(self, key:str) -> bool:
+    def exist(self, key: str) -> bool:
         """Checks whether a key already exist in the board.
 
         Parameters

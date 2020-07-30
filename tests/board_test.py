@@ -1,3 +1,4 @@
+from behavior_machine.library import WaitState, IdleState
 import pytest
 
 from behavior_machine.board import Board
@@ -57,6 +58,39 @@ def test_get_non_exist():
     assert b.get('key') is None
 
 
+def test_board_set_deep_copy():
+
+    b = Board()
+    test_obj = {
+        'hello': 'world'
+    }
+    b.set('obj', test_obj, deep_copy=False)
+    test_obj['hello'] = 'test'
+    assert b.get('obj')['hello'] == 'test'
+    assert b.get('obj')['hello'] != 'world'
+
+
+def test_board_get_deep_copy():
+
+    b = Board()
+    test_obj = {
+        'hello': 'world'
+    }
+    b.set('obj', test_obj, deep_copy=False)
+    rtn_obj = b.get('obj', False)
+    assert rtn_obj['hello'] == 'world'
+    test_obj['hello'] = 'test'
+    assert rtn_obj['hello'] == 'test'
+
+
+def test_board_exist_func():
+    b = Board()
+    b.set('hello', 'XXX')
+    assert b.exist('hello')
+    assert not b.exist('hello2')
+    assert not b.exist('hell')
+
+
 def test_internal_set():
     s1 = DummyState('s1')
     set_state = SetState('set', 'key', 'hello')
@@ -78,3 +112,67 @@ def test_internal_get():
     exe.start(b, manual_exec=True)
     exe.update(b, wait=True)
     assert b.get('output') == 'hello_get'
+
+
+def test_object_set_get(capsys):
+
+    class SetState(State):
+        def execute(self, board: Board):
+            obj = {
+                'hello': [1, 2, 3],
+                'name': {
+                    'first': 'test'
+                }
+            }
+            board.set('obj', obj)
+            obj['name'] = {}
+            return StateStatus.SUCCESS
+
+    class GetState(State):
+        def execute(self, board):
+            obj = board.get('obj')
+            assert obj['hello'] == [1, 2, 3]
+            assert obj['name']['first'] == 'test'
+            return StateStatus.SUCCESS
+
+    s = SetState('s')
+    g = GetState('g')
+    w = WaitState('w', 1)
+
+    s.add_transition_on_success(w)
+    w.add_transition_on_success(g)
+    exe = Machine('xe', s, end_state_ids=['g'])
+    exe.run()
+    assert exe.is_end()
+    assert exe._curr_state._status == StateStatus.SUCCESS
+    #assert exe._curr_state.checkStatus(StateStatus.SUCCESS)
+
+
+def test_object_get_in_transition(capsys):
+
+    class SetState(State):
+        def execute(self, board: Board):
+            obj = {
+                'hello': [1, 2, 3],
+                'name': {
+                    'first': 'test'
+                }
+            }
+            board.set('obj', obj)
+            obj = {}
+            return StateStatus.SUCCESS
+
+    s = SetState('s')
+    w = WaitState('w', 1)
+    i = IdleState('i')
+    end = IdleState('end')
+
+    s.add_transition_on_success(w)
+    w.add_transition_on_success(i)
+    i.add_transition(lambda state, board: board.get('obj')
+                     ['name']['first'] == 'test', end)
+    exe = Machine('xe', s, end_state_ids=['end'])
+    exe.run()
+    assert exe.is_end()
+    # Idle state returns RUNNING instead of SUCCESS
+    assert exe._curr_state._status == StateStatus.RUNNING

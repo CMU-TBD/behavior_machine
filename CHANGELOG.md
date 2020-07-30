@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2020-07-30
+- **[Added]** Boards can now check if a key already exist using the `exist` method.
+- **[Added]** You can specify whether a deep copy or shallow copy of an object is saved in the board using the `deep_copy` flag in the set/get methods. By default, the flag is set to true.
+- **[Added]** Additional tests to check the new board functionalities and validate end state runs completely before the machine consider it complete.
+
 ## [0.2.1] - 2020-07-09
 #### Added
 - `get_debug_info` that returns a dict that contains debugging informations

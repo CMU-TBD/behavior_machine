@@ -23,3 +23,6 @@ m1.add_transition(lambda state, board: state._curr_state._name == "ps3", is1)
 m2 = Machine("m2", m1, end_state_ids=['is1'], rate=10)
 m2.run()
 ```
+
+## Documentation
+You can view more detailed documentation by following this [link](https://behavior-machine.readthedocs.io/en/latest/index.html)

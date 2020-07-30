@@ -285,6 +285,9 @@ class Machine(NestedState):
             super().start(board)
 
     def execute(self, board: Board):
+        """
+        :meta private:
+        """
         # tick the internal states
         while not self._interupted_event.is_set():
             time.sleep(self._rate)
@@ -313,6 +316,9 @@ class Machine(NestedState):
         return StateStatus.INTERRUPTED
 
     def tick(self, board: Board) -> State:
+        """
+        :meta private:
+        """
         # Overwrites State's tick
         # Because this is machine, when it is interrupted, it interrupt its lower level entities first.
         for transition in self._transitions:

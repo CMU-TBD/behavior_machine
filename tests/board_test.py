@@ -176,3 +176,37 @@ def test_object_get_in_transition(capsys):
     assert exe.is_end()
     # Idle state returns RUNNING instead of SUCCESS
     assert exe._curr_state._status == StateStatus.RUNNING
+
+def test_dump(tmp_path):
+    import os
+
+    b = Board()
+    b.set('h1','world')
+    b.set('h2', 345)
+
+    save_path = os.path.join(tmp_path, 'test.yaml')
+    b.dump(save_path)
+
+    with open(save_path) as f:
+        assert f.readline().strip() == "h1: world"
+        assert f.readline().strip() == "h2: 345"
+
+def test_load():
+    import os
+    import pathlib
+
+    b = Board()
+    assert b.load(os.path.join(pathlib.Path(__file__).parent, "res","load_tester.yaml"))
+    assert b.get('info') == 'hello world'
+    assert b.get('testing') == 55634
+
+def test_load_namespace():
+    import os
+    import pathlib
+
+    b = Board()
+    assert b.load(os.path.join(pathlib.Path(__file__).parent, "res","load_tester.yaml"), namespace="loader")
+    assert b.get('loader.info') == 'hello world'
+    assert b.get('info') is None
+    assert b.get('loader.testing') == 55634
+    assert b.get('testing') is None

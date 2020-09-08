@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- **[Added]** API for boards to load from or dump to a YAML file.
+- **[Changed]** depreciated `isAlive` to `is_alive`
+
 ## [0.2.2] - 2020-07-30
 - **[Added]** Boards can now check if a key already exist using the `exist` method.
 - **[Added]** You can specify whether a deep copy or shallow copy of an object is saved in the board using the `deep_copy` flag in the set/get methods. By default, the flag is set to true.

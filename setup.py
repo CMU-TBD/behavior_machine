@@ -13,6 +13,7 @@ setuptools.setup(name='behavior_machine',
                  author_email='zhi.tan@ri.cmu.edu',
                  packages=setuptools.find_packages(),
                  install_requires=[
+                     'pyyaml==5.3.1',
                  ],
                  license='MIT',
                  python_requires='>=3.6')

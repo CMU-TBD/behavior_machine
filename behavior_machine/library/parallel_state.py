@@ -36,7 +36,7 @@ class ParallelState(NestedState):
         self._children_complete_event.set()
         # we wait for the main thread to stop
         self._run_thread.join(timeout)
-        return not self._run_thread.isAlive()
+        return not self._run_thread.is_alive()
         # return super().interrupt(timeout=timeout)
 
     def execute(self, board: Board):

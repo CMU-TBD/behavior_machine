@@ -1,17 +1,17 @@
 import enum
-from enum import Enum
 import typing
 import time
 import sys
 import traceback
 import threading
-from .logging import logger
+import logging
 
 from .board import Board
+from .utils import parse_debug_info
 
 
 @enum.unique
-class StateStatus(Enum):
+class StateStatus(enum.Enum):
     UNKNOWN = -1     # Unknown
     NOT_RUNNING = 0  # the default state, should be restarted by Parent after transition out
     RUNNING = 1     # The state is currently running
@@ -262,8 +262,9 @@ class Machine(NestedState):
     _rate: float  # Rate to tick
     _debug_flag: bool
     _debug_cb: typing.Callable[[typing.Dict[str, typing.Any]], None]
+    _logger: logging.Logger
 
-    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None):
+    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None, logger: logging.Logger = None):
         self._root = root
         self._curr_state = root
         self._started = False
@@ -271,6 +272,7 @@ class Machine(NestedState):
         self._rate = 1.0 / rate
         self._debug_flag = debug
         self._debug_cb = debug_cb
+        self._logger = logger
         super(Machine, self).__init__(name)
 
     def start(self, board: Board, manual_exec=False) -> None:
@@ -294,14 +296,14 @@ class Machine(NestedState):
             if self._debug_flag:
                 # get debug info
                 debug_info = self.get_debug_info()
-                # we print it to our output
-                parsed_info = logger.parse_debug_info(
-                    debug_info, prefix="[Base] ")
+                # parse the information
+                parsed_info = parse_debug_info(debug_info, prefix="[Base] ")
                 # call the cb if we have it
                 if self._debug_cb is not None:
                     self._debug_cb(debug_info, parsed_info)
-                # print it
-                logger.print(('\n').join(parsed_info))
+                # log it
+                if self._logger is not None:
+                    self._logger.debug(('\n').join(parsed_info))
 
             # quit if we reach an end state & the state has ended
             if self.is_end():

@@ -216,20 +216,21 @@ def test_machine_with_exception_in_transition_with_zombie_states(capsys):
     assert is2._run_thread is None  # Never reach it
 
 
-def test_debugging_machine(capsys):
+def test_debugging_machine(caplog):
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    caplog.set_level(logging.DEBUG)
 
-    from behavior_machine import logging
-    logging.add_fs('capsys', sys.stdout)
+    logger = logging.getLogger(__name__)
+
     s1 = WaitState('s1', 1.1)
     s2 = DummyState('s2')
     s1.add_transition_on_success(s2)
-    mac = Machine("mac", s1, ["s2"], debug=True, rate=1)
+    mac = Machine("mac", s1, ["s2"], debug=True, rate=1, logger=logger)
     mac.run()
     assert mac.is_end()
-    assert capsys.readouterr().out == ("[Base] mac(Machine) -- RUNNING\n"
-                                       "  -> s1(WaitState) -- RUNNING\n"
-                                       "[Base] mac(Machine) -- RUNNING\n"
-                                       "  -> s2(DummyState) -- SUCCESS\n")
+    assert caplog.records[0].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING"
+    assert caplog.records[1].message == "[Base] mac(Machine) -- RUNNING\n  -> s2(DummyState) -- SUCCESS"
 
 
 def test_interrupt_machine(capsys):

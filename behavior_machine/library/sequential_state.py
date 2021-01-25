@@ -51,7 +51,7 @@ class SequentialState(NestedState):
                 pass
         # wait for thread to end
         self._run_thread.join(timeout)
-        return not self._run_thread.isAlive()
+        return not self._run_thread.is_alive()
 
     def tick(self, board):
         next_state = super().tick(board)

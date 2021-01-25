@@ -194,8 +194,8 @@ def test_machine_with_exception_in_transition(capsys):
     mac.run()
 
     assert mac._status == StateStatus.EXCEPTIION
-    assert not mac._run_thread.isAlive()
-    assert not is1._run_thread.isAlive()
+    assert not mac._run_thread.is_alive()
+    assert not is1._run_thread.is_alive()
     assert is2._run_thread is None  # Never reach is2
 
 
@@ -211,8 +211,8 @@ def test_machine_with_exception_in_transition_with_zombie_states(capsys):
     assert mac._status == StateStatus.EXCEPTIION
     # this is an interrupted, because exception happen at higher level
     assert ws1._status == StateStatus.INTERRUPTED
-    assert not mac._run_thread.isAlive()
-    assert not ws1._run_thread.isAlive()
+    assert not mac._run_thread.is_alive()
+    assert not ws1._run_thread.is_alive()
     assert is2._run_thread is None  # Never reach it
 
 

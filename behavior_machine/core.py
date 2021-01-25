@@ -157,9 +157,9 @@ class State():
         bool
             Whether the current state finished, if false, it means timedout.
         """
-        if self._run_thread is not None and self._run_thread.isAlive():
+        if self._run_thread is not None and self._run_thread.is_alive():
             self._run_thread.join(timeout)
-            return not self._run_thread.isAlive()
+            return not self._run_thread.is_alive()
         return True
 
     def interrupt(self, timeout: float = None) -> bool:
@@ -341,7 +341,7 @@ class Machine(NestedState):
         self._curr_state = self._curr_state.tick(board)
 
     def is_end(self) -> bool:
-        return not self._curr_state._run_thread.isAlive() and \
+        return not self._curr_state._run_thread.is_alive() and \
             (self._curr_state._name == self._end_state_ids or self._curr_state._name in self._end_state_ids)
 
     def run(self, board: Board = None) -> None:

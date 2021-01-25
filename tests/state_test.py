@@ -40,7 +40,7 @@ def test_interrupt():
     t.interrupt()
     t.wait()
     assert t._status == StateStatus.NOT_SPECIFIED
-    assert not t._run_thread.isAlive()
+    assert not t._run_thread.is_alive()
 
 
 def test_exception_base(capsys):

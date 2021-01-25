@@ -83,9 +83,9 @@ def test_interruption_in_sequential_state(capsys):
     assert ws2.checkStatus(StateStatus.INTERRUPTED)
     assert ws1.checkStatus(StateStatus.SUCCESS)
     assert ps1.checkStatus(StateStatus.UNKNOWN)
-    assert not sm._run_thread.isAlive()
-    assert not ws1._run_thread.isAlive()
-    assert not ws2._run_thread.isAlive()
+    assert not sm._run_thread.is_alive()
+    assert not ws1._run_thread.is_alive()
+    assert not ws2._run_thread.is_alive()
 
 
 def test_sequential_state_success(capsys):
@@ -121,13 +121,13 @@ def test_interruption_in_machines_with_sequential_state(capsys):
     assert exe._exception_raised_state_name == ""
     assert exe._internal_exception is None
     assert exe._status == StateStatus.SUCCESS
-    assert not exe._run_thread.isAlive()
+    assert not exe._run_thread.is_alive()
     assert exe._curr_state._name == 'iss'
     assert exe.is_end()
     assert capsys.readouterr().out == ""
-    assert not sm._run_thread.isAlive()
-    assert not ws1._run_thread.isAlive()
-    assert not ws2._run_thread.isAlive()
+    assert not sm._run_thread.is_alive()
+    assert not ws1._run_thread.is_alive()
+    assert not ws2._run_thread.is_alive()
     assert sm._status == StateStatus.INTERRUPTED
     assert ws2._status == StateStatus.INTERRUPTED
     assert ws1._status == StateStatus.SUCCESS

@@ -28,7 +28,7 @@ def test_parallel_state_individual(capsys):
     assert pm.wait(0.1)
     assert not pm.checkStatus(StateStatus.RUNNING)
     assert pm.checkStatus(StateStatus.SUCCESS)
-    assert not pm._run_thread.isAlive()
+    assert not pm._run_thread.is_alive()
 
 
 def test_parallel_state_in_machine(capsys):
@@ -49,7 +49,7 @@ def test_parallel_state_in_machine(capsys):
     # wait another one seconds
     assert exe.wait(2)
     assert exe.checkStatus(StateStatus.SUCCESS)
-    assert not pm._run_thread.isAlive()
+    assert not pm._run_thread.is_alive()
 
 
 def test_parallel_one_state_fails(capsys):
@@ -79,7 +79,7 @@ def test_parallel_one_state_fails(capsys):
     # wait another one seconds
     assert exe.wait(2)
     assert exe._curr_state == fes
-    assert not pm._run_thread.isAlive()
+    assert not pm._run_thread.is_alive()
 
 
 def test_exception_in_parallel_state(capsys):
@@ -103,7 +103,7 @@ def test_exception_in_parallel_state(capsys):
     assert exe.checkStatus(StateStatus.EXCEPTIION)
     assert str(exe._internal_exception) == error_text
     assert exe._exception_raised_state_name == "xe.pm.re"
-    assert not pm._run_thread.isAlive()
+    assert not pm._run_thread.is_alive()
 
 
 def test_interrupt_in_parallel_state(capsys):
@@ -120,7 +120,7 @@ def test_interrupt_in_parallel_state(capsys):
     assert exe.wait(0.2)
     assert ws.checkStatus(StateStatus.INTERRUPTED)
     assert ws2.checkStatus(StateStatus.INTERRUPTED)
-    assert not pm._run_thread.isAlive()
+    assert not pm._run_thread.is_alive()
 
 
 def test_parallel_state_performance(capsys):
@@ -137,7 +137,7 @@ def test_parallel_state_performance(capsys):
     exe.interrupt()
     duration = time.time() - start_time
     assert duration < 2  # as long as its not too slow, we are fine.
-    assert not pm._run_thread.isAlive()
+    assert not pm._run_thread.is_alive()
 
 
 def test_parallel_debug_info():

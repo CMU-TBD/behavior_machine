@@ -21,6 +21,12 @@ class ParallelState(NestedState):
     def add_children(self, state: State):
         self._children.append(state)
 
+    def pre_execute(self):
+        # make sure all children states have the correct states
+        child: State
+        for child in self._children:
+            child._status = StateStatus.NOT_RUNNING
+
     def interrupt(self, timeout=None):
         # set our own flag to be true
         self._interupted_event.set()
@@ -64,10 +70,10 @@ class ParallelState(NestedState):
             for child in self._children:
                 if child.checkStatus(StateStatus.RUNNING):
                     child.interrupt()
-                elif child.checkStatus(StateStatus.EXCEPTIION):
+                elif child.checkStatus(StateStatus.EXCEPTION):
                     self.propergate_exception_information(child)
             # return the exception state
-            return StateStatus.EXCEPTIION
+            return StateStatus.EXCEPTION
 
         # check the state of all the children & return success if and only if all are successful
         all_success = True
@@ -89,7 +95,7 @@ class ParallelState(NestedState):
                     child.tick(board)
                 elif child.checkStatus(StateStatus.FAILED):
                     self._children_complete_event.set()
-                elif child.checkStatus(StateStatus.EXCEPTIION):
+                elif child.checkStatus(StateStatus.EXCEPTION):
                     self.propergate_exception_information(child)
                     self._child_exception = True
                     self._children_complete_event.set()

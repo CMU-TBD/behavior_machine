@@ -18,7 +18,7 @@ class StateStatus(enum.Enum):
     SUCCESS = 2     # The state finished successfully
     FAILED = 3      # The state failed
     INTERRUPTED = 4  # Being interrupted
-    EXCEPTIION = 5  # An internal uncatched exception was thrown.
+    EXCEPTION = 5  # An internal uncatched exception was thrown.
     NOT_SPECIFIED = 6  # execute() didn't say
 
 
@@ -126,13 +126,13 @@ class State():
         raise NotImplementedError("Default execute method is not overwritten")
 
     def _execute(self, board: Board):
-        # TODO Some kind of exeception catching here.
-        # Right now when it fails nothing goes up
         try:
+            self.pre_execute()
             self._status = self.execute(board)
+            self.post_execute()
         except Exception as e:
             self._internal_exception = e
-            self._status = StateStatus.EXCEPTIION
+            self._status = StateStatus.EXCEPTION
         if self._status is None:
             self._status = StateStatus.NOT_SPECIFIED
 
@@ -207,6 +207,11 @@ class State():
             'status': self._status
         }
 
+    def pre_execute(self):
+        pass
+
+    def post_execute(self):
+        pass
 
 class NestedState(State):
 
@@ -233,7 +238,9 @@ class NestedState(State):
     def _execute(self, board: Board):
         # Right now when it fails nothing goes up
         try:
+            self.pre_execute()
             self._status = self.execute(board)
+            self.post_execute()
         except Exception as e:
             try:
                 self.interrupt()
@@ -243,7 +250,7 @@ class NestedState(State):
                 # this is a common exception because we are the current thread
                 # This level of exception often happen in the transition checking level
             self._internal_exception = e
-            self._status = StateStatus.EXCEPTIION
+            self._status = StateStatus.EXCEPTION
         if self._status is None:
             self._status = StateStatus.NOT_SPECIFIED
 
@@ -309,9 +316,9 @@ class Machine(NestedState):
             if self.is_end():
                 return StateStatus.SUCCESS
             # check if the state or its nested states has thrown an exception
-            if self._curr_state.checkStatus(StateStatus.EXCEPTIION):
+            if self._curr_state.checkStatus(StateStatus.EXCEPTION):
                 self.propergate_exception_information(self._curr_state)
-                return StateStatus.EXCEPTIION
+                return StateStatus.EXCEPTION
         return StateStatus.INTERRUPTED
 
     def tick(self, board: Board) -> State:

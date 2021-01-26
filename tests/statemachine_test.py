@@ -178,7 +178,7 @@ def test_machine_with_exception(capsys):
     mac.run()
 
     assert capsys.readouterr().out == 'p1\n'
-    assert mac.checkStatus(StateStatus.EXCEPTIION)
+    assert mac.checkStatus(StateStatus.EXCEPTION)
     assert str(mac._internal_exception) == "raiseException"
     assert mac._exception_raised_state_name == "mac.re1"
 
@@ -193,7 +193,7 @@ def test_machine_with_exception_in_transition(capsys):
     mac = Machine("mac", is1, ["is2"])
     mac.run()
 
-    assert mac._status == StateStatus.EXCEPTIION
+    assert mac._status == StateStatus.EXCEPTION
     assert not mac._run_thread.is_alive()
     assert not is1._run_thread.is_alive()
     assert is2._run_thread is None  # Never reach is2
@@ -208,7 +208,7 @@ def test_machine_with_exception_in_transition_with_zombie_states(capsys):
 
     mac = Machine("mac", ws1, ["is2"])
     mac.run()
-    assert mac._status == StateStatus.EXCEPTIION
+    assert mac._status == StateStatus.EXCEPTION
     # this is an interrupted, because exception happen at higher level
     assert ws1._status == StateStatus.INTERRUPTED
     assert not mac._run_thread.is_alive()

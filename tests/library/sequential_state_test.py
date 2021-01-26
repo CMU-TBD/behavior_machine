@@ -82,7 +82,7 @@ def test_interruption_in_sequential_state(capsys):
     assert sm.checkStatus(StateStatus.INTERRUPTED)
     assert ws2.checkStatus(StateStatus.INTERRUPTED)
     assert ws1.checkStatus(StateStatus.SUCCESS)
-    assert ps1.checkStatus(StateStatus.UNKNOWN)
+    assert ps1.checkStatus(StateStatus.NOT_RUNNING)
     assert not sm._run_thread.is_alive()
     assert not ws1._run_thread.is_alive()
     assert not ws2._run_thread.is_alive()
@@ -131,7 +131,7 @@ def test_interruption_in_machines_with_sequential_state(capsys):
     assert sm._status == StateStatus.INTERRUPTED
     assert ws2._status == StateStatus.INTERRUPTED
     assert ws1._status == StateStatus.SUCCESS
-    assert ps1._status == StateStatus.UNKNOWN
+    assert ps1._status == StateStatus.NOT_RUNNING
     assert ws2.checkStatus(StateStatus.INTERRUPTED)
     assert ws1.checkStatus(StateStatus.SUCCESS)
 
@@ -148,9 +148,24 @@ def test_sequential_debug_info():
     assert info['children'][0]['name'] == 'w1'
     assert info['children'][0]['status'] == StateStatus.RUNNING
     assert info['children'][1]['name'] == 'w2'
-    assert info['children'][1]['status'] == StateStatus.UNKNOWN
+    assert info['children'][1]['status'] == StateStatus.NOT_RUNNING
     seqs.wait(1)
     info = seqs.get_debug_info()
     assert info['children'][0]['status'] == StateStatus.SUCCESS
     assert info['children'][1]['status'] == StateStatus.RUNNING
     seqs.wait()
+
+def test_repeat_sequential_state():
+    w1 = WaitState('w1', 0.3)
+    w2 = WaitState('w2', 0.3)
+    seqs = SequentialState('seqs', [w1, w2])
+    seqs.start(None)
+    seqs.wait(1)
+    info = seqs.get_debug_info()
+    assert info['children'][0]['status'] == StateStatus.SUCCESS
+    assert info['children'][1]['status'] == StateStatus.SUCCESS
+    seqs.start(None)
+    seqs.wait(0.1)
+    info = seqs.get_debug_info()
+    assert info['children'][0]['status'] == StateStatus.RUNNING
+    assert info['children'][1]['status'] == StateStatus.NOT_RUNNING

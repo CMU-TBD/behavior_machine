@@ -100,7 +100,7 @@ def test_exception_in_parallel_state(capsys):
     exe.start(None)
     exe.wait(0.5)
     assert exe._curr_state == pm
-    assert exe.checkStatus(StateStatus.EXCEPTIION)
+    assert exe.checkStatus(StateStatus.EXCEPTION)
     assert str(exe._internal_exception) == error_text
     assert exe._exception_raised_state_name == "xe.pm.re"
     assert not pm._run_thread.is_alive()
@@ -141,8 +141,8 @@ def test_parallel_state_performance(capsys):
 
 
 def test_parallel_debug_info():
-    w1 = WaitState('w1', 1)
-    w2 = WaitState('w2', 1)
+    w1 = WaitState('w1', 0.3)
+    w2 = WaitState('w2', 0.3)
     pm = ParallelState("pm", [w1, w2])
     pm.start(None)
     pm.wait(0.1)
@@ -153,6 +153,3 @@ def test_parallel_debug_info():
     assert info['children'][0]['status'] == StateStatus.RUNNING
     assert info['children'][1]['name'] == 'w2'
     assert info['children'][1]['status'] == StateStatus.RUNNING
-    pm.wait(1)
-    pm.tick(None)
-    pm.wait(0.1)

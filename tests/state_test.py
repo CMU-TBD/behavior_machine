@@ -54,7 +54,7 @@ def test_exception_base(capsys):
     t = RaiseExceptionState("test_name")
     t.start(None)
     assert str(t._internal_exception) == error_text
-    assert t._status == StateStatus.EXCEPTIION
+    assert t._status == StateStatus.EXCEPTION
 
 
 def test_debug_info():

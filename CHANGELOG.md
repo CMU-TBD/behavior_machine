@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3] - 2021-01-25
+- **[Fixed]** Changed `isAlive` to `is_alive` -- by Schwarzbaer 
+- **[Changed]** Change the logging framework to use the python built-in-logger.
+- **[Fixed]** Typo of `EXCEPTIION`
+- **[Changed]** Minor tweaks to tests.
+
 ## [0.2.2] - 2020-07-30
 - **[Added]** Boards can now check if a key already exist using the `exist` method.
 - **[Added]** You can specify whether a deep copy or shallow copy of an object is saved in the board using the `deep_copy` flag in the set/get methods. By default, the flag is set to true.

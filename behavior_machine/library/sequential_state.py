@@ -19,6 +19,12 @@ class SequentialState(NestedState):
     def add_children(self, state: State):
         self._children.append(state)
 
+    def pre_execute(self):
+        # make sure all children states have the correct states
+        child: State
+        for child in self._children:
+            child._status = StateStatus.NOT_RUNNING
+
     def execute(self, board: Board):
         # execute each children one by one in order
         for child in self._children:
@@ -33,9 +39,9 @@ class SequentialState(NestedState):
             if self._interupted_event.is_set():
                 return StateStatus.INTERRUPTED
             status = self._curr_child._status
-            if status == StateStatus.EXCEPTIION:
+            if status == StateStatus.EXCEPTION:
                 self.propergate_exception_information(self._curr_child)
-                return StateStatus.EXCEPTIION
+                return StateStatus.EXCEPTION
             elif status != StateStatus.SUCCESS:
                 return status
         return StateStatus.SUCCESS

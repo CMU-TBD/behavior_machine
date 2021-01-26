@@ -1,24 +1,24 @@
 import enum
-from enum import Enum
 import typing
 import time
 import sys
 import traceback
 import threading
-from .logging import logger
+import logging
 
 from .board import Board
+from .utils import parse_debug_info
 
 
 @enum.unique
-class StateStatus(Enum):
+class StateStatus(enum.Enum):
     UNKNOWN = -1     # Unknown
     NOT_RUNNING = 0  # the default state, should be restarted by Parent after transition out
     RUNNING = 1     # The state is currently running
     SUCCESS = 2     # The state finished successfully
     FAILED = 3      # The state failed
     INTERRUPTED = 4  # Being interrupted
-    EXCEPTIION = 5  # An internal uncatched exception was thrown.
+    EXCEPTION = 5  # An internal uncatched exception was thrown.
     NOT_SPECIFIED = 6  # execute() didn't say
 
 
@@ -126,13 +126,13 @@ class State():
         raise NotImplementedError("Default execute method is not overwritten")
 
     def _execute(self, board: Board):
-        # TODO Some kind of exeception catching here.
-        # Right now when it fails nothing goes up
         try:
+            self.pre_execute()
             self._status = self.execute(board)
+            self.post_execute()
         except Exception as e:
             self._internal_exception = e
-            self._status = StateStatus.EXCEPTIION
+            self._status = StateStatus.EXCEPTION
         if self._status is None:
             self._status = StateStatus.NOT_SPECIFIED
 
@@ -207,6 +207,11 @@ class State():
             'status': self._status
         }
 
+    def pre_execute(self):
+        pass
+
+    def post_execute(self):
+        pass
 
 class NestedState(State):
 
@@ -233,7 +238,9 @@ class NestedState(State):
     def _execute(self, board: Board):
         # Right now when it fails nothing goes up
         try:
+            self.pre_execute()
             self._status = self.execute(board)
+            self.post_execute()
         except Exception as e:
             try:
                 self.interrupt()
@@ -243,7 +250,7 @@ class NestedState(State):
                 # this is a common exception because we are the current thread
                 # This level of exception often happen in the transition checking level
             self._internal_exception = e
-            self._status = StateStatus.EXCEPTIION
+            self._status = StateStatus.EXCEPTION
         if self._status is None:
             self._status = StateStatus.NOT_SPECIFIED
 
@@ -262,8 +269,9 @@ class Machine(NestedState):
     _rate: float  # Rate to tick
     _debug_flag: bool
     _debug_cb: typing.Callable[[typing.Dict[str, typing.Any]], None]
+    _logger: logging.Logger
 
-    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None):
+    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None, logger: logging.Logger = None):
         self._root = root
         self._curr_state = root
         self._started = False
@@ -271,6 +279,7 @@ class Machine(NestedState):
         self._rate = 1.0 / rate
         self._debug_flag = debug
         self._debug_cb = debug_cb
+        self._logger = logger
         super(Machine, self).__init__(name)
 
     def start(self, board: Board, manual_exec=False) -> None:
@@ -294,22 +303,22 @@ class Machine(NestedState):
             if self._debug_flag:
                 # get debug info
                 debug_info = self.get_debug_info()
-                # we print it to our output
-                parsed_info = logger.parse_debug_info(
-                    debug_info, prefix="[Base] ")
+                # parse the information
+                parsed_info = parse_debug_info(debug_info, prefix="[Base] ")
                 # call the cb if we have it
                 if self._debug_cb is not None:
                     self._debug_cb(debug_info, parsed_info)
-                # print it
-                logger.print(('\n').join(parsed_info))
+                # log it
+                if self._logger is not None:
+                    self._logger.debug(('\n').join(parsed_info))
 
             # quit if we reach an end state & the state has ended
             if self.is_end():
                 return StateStatus.SUCCESS
             # check if the state or its nested states has thrown an exception
-            if self._curr_state.checkStatus(StateStatus.EXCEPTIION):
+            if self._curr_state.checkStatus(StateStatus.EXCEPTION):
                 self.propergate_exception_information(self._curr_state)
-                return StateStatus.EXCEPTIION
+                return StateStatus.EXCEPTION
         return StateStatus.INTERRUPTED
 
     def tick(self, board: Board) -> State:

@@ -178,7 +178,7 @@ def test_machine_with_exception(capsys):
     mac.run()
 
     assert capsys.readouterr().out == 'p1\n'
-    assert mac.checkStatus(StateStatus.EXCEPTIION)
+    assert mac.checkStatus(StateStatus.EXCEPTION)
     assert str(mac._internal_exception) == "raiseException"
     assert mac._exception_raised_state_name == "mac.re1"
 
@@ -193,7 +193,7 @@ def test_machine_with_exception_in_transition(capsys):
     mac = Machine("mac", is1, ["is2"])
     mac.run()
 
-    assert mac._status == StateStatus.EXCEPTIION
+    assert mac._status == StateStatus.EXCEPTION
     assert not mac._run_thread.is_alive()
     assert not is1._run_thread.is_alive()
     assert is2._run_thread is None  # Never reach is2
@@ -208,7 +208,7 @@ def test_machine_with_exception_in_transition_with_zombie_states(capsys):
 
     mac = Machine("mac", ws1, ["is2"])
     mac.run()
-    assert mac._status == StateStatus.EXCEPTIION
+    assert mac._status == StateStatus.EXCEPTION
     # this is an interrupted, because exception happen at higher level
     assert ws1._status == StateStatus.INTERRUPTED
     assert not mac._run_thread.is_alive()
@@ -216,20 +216,21 @@ def test_machine_with_exception_in_transition_with_zombie_states(capsys):
     assert is2._run_thread is None  # Never reach it
 
 
-def test_debugging_machine(capsys):
+def test_debugging_machine(caplog):
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    caplog.set_level(logging.DEBUG)
 
-    from behavior_machine import logging
-    logging.add_fs('capsys', sys.stdout)
+    logger = logging.getLogger(__name__)
+
     s1 = WaitState('s1', 1.1)
     s2 = DummyState('s2')
     s1.add_transition_on_success(s2)
-    mac = Machine("mac", s1, ["s2"], debug=True, rate=1)
+    mac = Machine("mac", s1, ["s2"], debug=True, rate=1, logger=logger)
     mac.run()
     assert mac.is_end()
-    assert capsys.readouterr().out == ("[Base] mac(Machine) -- RUNNING\n"
-                                       "  -> s1(WaitState) -- RUNNING\n"
-                                       "[Base] mac(Machine) -- RUNNING\n"
-                                       "  -> s2(DummyState) -- SUCCESS\n")
+    assert caplog.records[0].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING"
+    assert caplog.records[1].message == "[Base] mac(Machine) -- RUNNING\n  -> s2(DummyState) -- SUCCESS"
 
 
 def test_interrupt_machine(capsys):

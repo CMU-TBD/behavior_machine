@@ -153,3 +153,4 @@ def test_parallel_debug_info():
     assert info['children'][0]['status'] == StateStatus.RUNNING
     assert info['children'][1]['name'] == 'w2'
     assert info['children'][1]['status'] == StateStatus.RUNNING
+    pm.interrupt()

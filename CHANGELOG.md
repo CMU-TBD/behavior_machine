@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- **[Added]** Ability to load a dictionary straight into the board.
+
 ## [0.2.3] - 2021-01-25
 - **[Fixed]** Changed `isAlive` to `is_alive` -- by Schwarzbaer 
 - **[Changed]** Change the logging framework to use the python built-in-logger.

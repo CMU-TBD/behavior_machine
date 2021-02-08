@@ -52,6 +52,7 @@ class Board():
                 self._map[key] = copy.deepcopy(value)
             else:
                 self._map[key] = value
+                
     def exist(self, key: str) -> bool:
         """Checks whether a key already exist in the board.
 
@@ -67,3 +68,12 @@ class Board():
         """
         with self._lock:
             return key in self._map
+
+    def load(self, keypair: typing.Mapping[str, typing.Any]) -> None:
+        """deep copy a collection of key pairing into the board.
+
+        Args:
+            keypair (typing.Mapping[str, typing.Any]): Values to be copied in.
+        """
+        for key, item in keypair.items():
+            self.set(key, item, deep_copy=True)

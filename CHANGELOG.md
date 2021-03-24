@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 - **[Added]** Ability to load a dictionary straight into the board.
+- **[Added]** A shorthand method to transition when the run_thread is done.
+- **[Added]** `is_interrupted` for states to check if it is being interrupted.
 
 ## [0.2.3] - 2021-01-25
 - **[Fixed]** Changed `isAlive` to `is_alive` -- by Schwarzbaer 

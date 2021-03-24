@@ -42,6 +42,19 @@ def test_interrupt():
     assert t._status == StateStatus.NOT_SPECIFIED
     assert not t._run_thread.is_alive()
 
+def test_is_interrupted():
+    class Interruptable(State):
+        def execute(self, board):
+            self._interupted_event.wait()
+    t = Interruptable("test")
+    t.start(None)
+    t.interrupt()
+    assert t.is_interrupted()
+    t.wait()
+    assert t._status == StateStatus.NOT_SPECIFIED
+    assert not t._run_thread.is_alive()
+
+
 
 def test_exception_base(capsys):
 

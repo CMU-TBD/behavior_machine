@@ -1,7 +1,7 @@
 # Changelog
 
-## [Unreleased]
-- **[Added]** Ability to load a dictionary straight into the board.
+## [0.2.4] - 2021-03-25
+- **[Added]** Ability to load a python dictionary straight into the board. `board.load`
 - **[Added]** A shorthand method to transition when the run_thread is done.
 - **[Added]** `is_interrupted` for states to check if it is being interrupted.
 

@@ -1,13 +1,13 @@
-import typing
-import time
-import sys
 import logging
+import sys
+import time
+import typing
 
-from .state import StateStatus
-from .state import State
-from .nested_state import NestedState
 from .board import Board
+from .nested_state import NestedState
+from .state import State, StateStatus
 from .utils import parse_debug_info
+
 
 class Machine(NestedState):
 
@@ -31,13 +31,13 @@ class Machine(NestedState):
         self._logger = logger
         super(Machine, self).__init__(name)
 
-    def start(self, board: Board, manual_exec=False) -> None:
+    def start(self, board: Board, flow_in: typing.Any = None, manual_exec=False) -> None:
         # Overwrites States' start
         # Method that is called when first enter this state.
         self._curr_state = self._root
         self._interupted_event.clear()
         # start the current state first before
-        self._curr_state.start(board)
+        self._curr_state.start(board, flow_in)
         # start the execution pipeline which automatically runs a state machine.
         if not manual_exec:
             super().start(board)
@@ -102,7 +102,7 @@ class Machine(NestedState):
         return not self._curr_state._run_thread.is_alive() and \
             (self._curr_state._name == self._end_state_ids or self._curr_state._name in self._end_state_ids)
 
-    def run(self, board: Board = None) -> None:
+    def run(self, board: Board = None, flow_in: typing.Any = None) -> None:
         """Run the machine starting from the initial/root state. This method should only be called
         from the outside of the state machine.
 
@@ -110,12 +110,14 @@ class Machine(NestedState):
         ----------
         board : Board, optional
             Board to track variables between states, by default None
+        flow_in : Any, optional
+            Data that is initially passed to the root state to help execution.
         """
 
         # create a board if no board is provided
         board = Board() if board is None else board
 
-        self.start(board)
+        self.start(board, flow_in)
         self.wait()
 
     def interrupt(self, timeout: float = None) -> bool:

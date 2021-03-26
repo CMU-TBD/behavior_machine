@@ -20,6 +20,10 @@ class State():
     # Event acting as a flag for interruptions
     _interupted_event: threading.Event
 
+    # use two variables to pass information between same-level states
+    flow_in: typing.Any
+    flow_out: typing.Any
+
     def __init__(self, name):
         self._name = name
         self._transitions = []
@@ -27,6 +31,8 @@ class State():
         self._interupted_event = threading.Event()
         self._internal_exception = None
         self._status = StateStatus.UNKNOWN
+        self.flow_in = None
+        self.flow_out = None
 
     def checkName(self, compare: str) -> bool:
         """Check if this state has the same name as the given state
@@ -131,9 +137,11 @@ class State():
         if self._status is None:
             self._status = StateStatus.NOT_SPECIFIED
 
-    def start(self, board: Board) -> None:
+    def start(self, board: Board, flow_in: typing.Any = None) -> None:
 
         self._status = StateStatus.RUNNING
+        self.flow_in = flow_in
+        self.flow_out = None
         self._interupted_event.clear()
         self._run_thread = threading.Thread(
             target=self._execute, args=(board,), name=self._name)
@@ -164,6 +172,15 @@ class State():
         # TODO check if this creates a race condition, is_alive() might still be true immediately after run() ends.
         return not self._run_thread.is_alive()
 
+    def is_interrupted(self) -> bool:
+        """Method to check whether the state itself is being interrupted
+        Returns
+        -------
+        bool
+            True if interrupted, false otherwise.
+        """
+        return self._interupted_event.is_set()
+
     def tick(self, board: Board) -> 'State':
         """Check whether any of the attached transitions should be taken. If yes, return the next state it should go to
 
@@ -182,7 +199,7 @@ class State():
             if transition[0](self, board):
                 self.interrupt(timeout=None)
                 # start the next state
-                transition[1].start(board)
+                transition[1].start(board, self.flow_out)
                 return transition[1]  # return the state to the execution
         return self
 

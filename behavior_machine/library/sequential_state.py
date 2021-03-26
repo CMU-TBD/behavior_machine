@@ -25,6 +25,7 @@ class SequentialState(NestedState):
             child._status = StateStatus.NOT_RUNNING
 
     def execute(self, board: Board):
+        flow_val = self.flow_in
         # execute each children one by one in order
         for child in self._children:
             with self._lock:
@@ -32,7 +33,7 @@ class SequentialState(NestedState):
                 if self._interupted_event.is_set():
                     return StateStatus.INTERRUPTED
                 self._curr_child = child
-                self._curr_child.start(board)
+                self._curr_child.start(board, flow_val)
             self._curr_child.wait()
             # check if we are done because of interrupt
             if self._interupted_event.is_set():
@@ -43,6 +44,8 @@ class SequentialState(NestedState):
                 return StateStatus.EXCEPTION
             elif status != StateStatus.SUCCESS:
                 return status
+            # update flow_val
+            flow_val = self._curr_child.flow_out
         return StateStatus.SUCCESS
 
     def interrupt(self, timeout=None):

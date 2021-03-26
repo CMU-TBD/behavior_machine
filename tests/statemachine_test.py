@@ -4,7 +4,7 @@ import sys
 import io
 import time
 
-from behavior_machine.board import Board
+from behavior_machine.core import Board
 from behavior_machine.core import State, StateStatus, Machine
 
 

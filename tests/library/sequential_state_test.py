@@ -3,7 +3,7 @@ import sys
 import io
 import pytest
 
-from behavior_machine.board import Board
+from behavior_machine.core import Board
 from behavior_machine.core import Machine, State, StateStatus
 from behavior_machine.library import SequentialState, PrintState, IdleState, WaitState
 

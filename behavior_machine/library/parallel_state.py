@@ -1,6 +1,5 @@
 import threading
-from ..core import StateStatus, State, NestedState
-from ..board import Board
+from ..core import StateStatus, State, NestedState, Board
 import typing
 import sys
 

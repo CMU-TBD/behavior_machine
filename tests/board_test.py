@@ -1,7 +1,7 @@
 from behavior_machine.library import WaitState, IdleState
 import pytest
 
-from behavior_machine.board import Board
+from behavior_machine.core import Board
 from behavior_machine.core import State, StateStatus, Machine
 
 

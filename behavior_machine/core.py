@@ -108,6 +108,18 @@ class State():
         """
         self.add_transition(lambda x, y: x._status == StateStatus.FAILED, next_state)
 
+    def add_transition_on_complete(self, next_state: 'State') -> None:
+        """Add transition to this state where when the state finishes execution regardless of output, 
+        it move tos the given state.
+
+        Parameters
+        ----------
+        next_state : State
+            State to transition to
+        """
+        self.add_transition(lambda x, y: not x._run_thread.is_alive(), next_state)
+
+
     def execute(self, board: Board) -> StateStatus:
         """All derived class should overwrite this method. It is run in a seperate thread when
         the state is running
@@ -168,6 +180,16 @@ class State():
         self._run_thread.join(timeout)
         # TODO check if this creates a race condition, is_alive() might still be true immediately after run() ends.
         return not self._run_thread.is_alive()
+
+    def is_interrupted(self) -> bool:
+        """Method to check whether the state itself is being interrupted
+
+        Returns
+        -------
+        bool
+            True if interrupted, false otherwise.
+        """
+        return self._interupted_event.is_set()
 
     def tick(self, board: Board) -> 'State':
         """Check whether any of the attached transitions should be taken. If yes, return the next state it should go to

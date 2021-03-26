@@ -72,6 +72,17 @@ class State():
         """
         self._transitions.append((cond, next_state))
 
+    def add_transition_on_complete(self, next_state: 'State') -> None:
+        """Add transition to this state where when the state finishes execution regardless of output, 
+        it move tos the given state.
+
+        Parameters
+        ----------
+        next_state : State
+            State to transition to
+        """
+        self.add_transition(lambda x, y: not x._run_thread.is_alive(), next_state)
+
     def add_transition_on_success(self, next_state: 'State') -> None:
         """Add transition to this state where when it is succesfully, move to the given state.
 

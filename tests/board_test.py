@@ -176,3 +176,24 @@ def test_object_get_in_transition(capsys):
     assert exe.is_end()
     # Idle state returns RUNNING instead of SUCCESS
     assert exe._curr_state._status == StateStatus.RUNNING
+
+
+def test_load_dictionary():
+
+    b = Board()
+    check_dict = {
+        'k1': 'Hello',
+        'k2': 800
+    }
+    b.load(check_dict)
+    assert b.get('k1') == 'Hello'
+    assert b.get('k2') == 800
+    check_dict['k2'] = 100
+    assert b.get('k2') == 800
+    # try replacing a previous value
+    check_dict_2 = {
+        'k2':1000
+    }
+    b.load(check_dict_2)
+    assert b.get('k2') == 1000
+

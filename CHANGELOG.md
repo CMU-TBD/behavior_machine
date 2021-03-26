@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.4] - 2021-03-25
+- **[Added]** Ability to load a python dictionary straight into the board. `board.load`
+- **[Added]** A shorthand method to transition when the run_thread is done.
+- **[Added]** `is_interrupted` for states to check if it is being interrupted.
+
 ## [0.2.3] - 2021-01-25
 - **[Fixed]** Changed `isAlive` to `is_alive` -- by Schwarzbaer 
 - **[Changed]** Change the logging framework to use the python built-in-logger.

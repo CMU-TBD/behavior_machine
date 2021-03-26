@@ -54,6 +54,25 @@ def test_transition_on_failed(capsys):
     assert exe._curr_state.checkName("ps2")
     assert capsys.readouterr().out == "failed\n"
 
+def test_transition_on_complete(capsys):
+
+    class NothingState(State):
+        def execute(self, board):
+            print("hello")
+    
+    ds1 = DummyState("d1")
+    ns = NothingState("ns")
+    ds2 = DummyState("ds2")
+
+    ds1.add_transition_on_success(ns)
+    ns.add_transition_on_complete(ds2)
+
+    exe = Machine("xe", ds1, end_state_ids=["ds2"], rate=10)
+    exe.run(None)
+    assert exe.is_end()
+    assert exe._curr_state.checkName("ds2")
+    assert capsys.readouterr().out == "hello\n"
+
 
 def test_simple_machine2(capsys):
     ps1 = PrintState("ps1", "print1")

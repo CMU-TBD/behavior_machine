@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+- **[Added]** `SaveFlowState`, `SetFlowFromBoardState` and `SetFlowState`. Three states that help with board access.
+- **[Added]** Tests for the three flow access states.
+
 ## [0.2.4] - 2021-03-25
 - **[Added]** Ability to load a python dictionary straight into the board. `board.load`
 - **[Added]** A shorthand method to transition when the run_thread is done.

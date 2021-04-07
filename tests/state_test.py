@@ -1,10 +1,11 @@
-import pytest
-import sys
 import io
+import sys
 import time
+from os import wait
 
-from behavior_machine.board import Board
-from behavior_machine.core import State, StateStatus, Machine
+import pytest
+
+from behavior_machine.core import Board, Machine, State, StateStatus
 
 
 def test_state_timeout(capsys):
@@ -81,3 +82,31 @@ def test_debug_info():
     assert info.get('name') == 's1'
     assert info.get('status') == StateStatus.UNKNOWN
     assert info.get('type') == "StateName1"
+
+def test_direct_flow():
+
+    test_phrase = "THIS_IS_FLOW"
+    test_phrase2 = "NEXT_FLOW"
+
+    class PriorState(State):
+        def execute(self, board):
+            assert self.flow_in is None
+            self.flow_out = test_phrase
+            return StateStatus.SUCCESS      
+
+    class PostState(State):
+       def execute(self, board):
+            assert self.flow_in == test_phrase
+            self.flow_out = test_phrase2
+            return StateStatus.SUCCESS        
+
+    prior = PriorState("prior")
+    post = PostState("post")
+    prior.add_transition_on_success(post)
+    prior.start(None)
+    nextS: State = None
+    while nextS is None:
+        nextS = prior.tick(None)
+    nextS.wait()
+    assert nextS.flow_out == test_phrase2
+

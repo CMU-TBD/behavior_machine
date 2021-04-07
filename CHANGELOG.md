@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.0] - 2021-04-07
+- **[Added]** The **`flow`** machenism that allows you to push information from the current state directly to the next state. The variable `self.flow_in` contains the information from the previous state and you set `self.flow_out` to hold information that goes to the next state. The flow is not carried over unless specified by the state. For `machine`,`sequential states`, `flow` are passed into low-level states.
+- **[Changed]** Restructure the code, such that core is in a sperate module instead of using the same file. `Board` is now in `core` instead of it's own namespace.
+- **[Added]** Other tests that check for consistency of implementation.
+
 ## [0.2.4] - 2021-03-25
 - **[Added]** Ability to load a python dictionary straight into the board. `board.load`
 - **[Added]** A shorthand method to transition when the run_thread is done.

@@ -4,7 +4,7 @@ import sys
 import io
 import time
 
-from behavior_machine.board import Board
+from behavior_machine.core import Board
 from behavior_machine.core import State, StateStatus, Machine
 
 
@@ -259,3 +259,19 @@ def test_interrupt_machine(capsys):
     mac = Machine("mac", s1, ["s2"], debug=True, rate=1)
     mac.start(None)
     assert mac.interrupt()
+
+def test_flow_into_machine(capsys):
+
+    test_phrase = "test_flow_into_machine"
+
+    class OnlyState(State):
+        def execute(self, board):
+            assert self.flow_in == test_phrase
+            print("only-state")
+            return StateStatus.SUCCESS      
+
+    os = OnlyState("only")
+    mac = Machine("mac", os, ["only"])
+    mac.run(flow_in=test_phrase)    
+    assert mac.is_end()    
+    assert capsys.readouterr().out == "only-state\n"

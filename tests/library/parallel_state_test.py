@@ -3,7 +3,7 @@ import sys
 import io
 import pytest
 
-from behavior_machine.board import Board
+from behavior_machine.core import Board
 from behavior_machine.core import State, Machine, StateStatus
 from behavior_machine.library import WaitState, ParallelState, IdleState
 
@@ -79,6 +79,65 @@ def test_parallel_one_state_fails(capsys):
     # wait another one seconds
     assert exe.wait(2)
     assert exe._curr_state == fes
+    assert not pm._run_thread.is_alive()
+
+def test_parallel_one_state_exception(capsys):
+
+    class ExceptionAfter1SecState(State):
+        def execute(self, board):
+            time.sleep(1)
+            return StateStatus.EXCEPTION
+
+    ws = WaitState("ws1", 5)
+    fs = ExceptionAfter1SecState("fs")
+    es = IdleState("es")
+    fes = IdleState("fs-terminal")
+    pm = ParallelState('pm', [ws, fs])
+    pm.add_transition_on_success(es)
+    pm.add_transition_on_failed(fes)
+    exe = Machine("main_machine", pm, end_state_ids=[
+                  'es', 'fs-terminal'], rate=10)
+
+    # run machine and see how it reacts
+    exe.start(None)
+    # wait for 0.5 second to see it is still running
+    assert not exe.wait(0.5)
+    assert exe.checkStatus(StateStatus.RUNNING)
+    assert exe._curr_state.checkName('pm')
+    # at this point, it should throw or raise the exception
+    # wait another 1.5 seconds
+    assert exe.wait(1.5)
+    assert exe.checkStatus(StateStatus.EXCEPTION)
+    assert not pm._run_thread.is_alive()
+
+def test_parallel_one_state_throw_exception(capsys):
+
+    class ExceptionAfter1SecState(State):
+        def execute(self, board):
+            time.sleep(1)
+            raise Exception("test exception")
+            #return StateStatus.EXCEPTION
+
+    ws = WaitState("ws1", 5)
+    fs = ExceptionAfter1SecState("fs")
+    es = IdleState("es")
+    fes = IdleState("fs-terminal")
+    pm = ParallelState('pm', [ws, fs])
+    pm.add_transition_on_success(es)
+    pm.add_transition_on_failed(fes)
+    exe = Machine("main_machine", pm, end_state_ids=[
+                  'es', 'fs-terminal'], rate=10)
+
+    # run machine and see how it reacts
+    exe.start(None)
+    # wait for 0.5 second to see it is still running
+    assert not exe.wait(0.5)
+    assert exe.checkStatus(StateStatus.RUNNING)
+    assert exe._curr_state.checkName('pm')
+    # at this point, it should throw or raise the exception
+    # wait another 1.5 seconds
+    assert exe.wait(1.5)
+    assert exe.checkStatus(StateStatus.EXCEPTION)
     assert not pm._run_thread.is_alive()
 
 

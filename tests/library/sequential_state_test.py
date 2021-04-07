@@ -3,8 +3,7 @@ import sys
 import io
 import pytest
 
-from behavior_machine.board import Board
-from behavior_machine.core import Machine, State, StateStatus
+from behavior_machine.core import Machine, State, StateStatus, Board
 from behavior_machine.library import SequentialState, PrintState, IdleState, WaitState
 
 
@@ -169,3 +168,40 @@ def test_repeat_sequential_state():
     info = seqs.get_debug_info()
     assert info['children'][0]['status'] == StateStatus.RUNNING
     assert info['children'][1]['status'] == StateStatus.NOT_RUNNING
+
+def test_sequential_state_flow(capsys):
+
+    flow_in_text = "test_sequential_state_flow"
+    first_time = True
+
+    class PreState(State):
+        def execute(self, board: Board) -> StateStatus:
+            self.flow_out = flow_in_text
+
+    class ReceiveState(State):
+        def execute(self, board):
+            nonlocal first_time
+            if first_time:
+                assert self.flow_in == flow_in_text
+                first_time = False
+                print("one")
+                return StateStatus.SUCCESS
+            else:
+                assert self.flow_in == None
+                print("two")
+                return StateStatus.FAILED
+    
+    ps = PreState("pre")
+    ws = WaitState("ws1", 0.1)
+    rs = ReceiveState("rs")
+    es = IdleState("es")
+    seqs = SequentialState('seqs', [rs, ws])
+    
+    ps.add_transition_on_complete(seqs)
+    seqs.add_transition_on_success(seqs)
+    seqs.add_transition_on_failed(es)
+
+    me = Machine("me", ps, end_state_ids=['es'])
+    me.start(None)
+    me.wait()
+    assert capsys.readouterr().out == "one\ntwo\n"

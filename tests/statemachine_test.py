@@ -51,7 +51,7 @@ def test_transition_on_failed(capsys):
     exe = Machine("xe", fs, end_state_ids=["ps1", "ps2"], rate=10)
     exe.run(None)
     assert exe.is_end()
-    assert exe._curr_state.checkName("ps2")
+    assert exe._curr_state.check_name("ps2")
     assert capsys.readouterr().out == "failed\n"
 
 def test_transition_on_complete(capsys):
@@ -70,7 +70,7 @@ def test_transition_on_complete(capsys):
     exe = Machine("xe", ds1, end_state_ids=["ds2"], rate=10)
     exe.run(None)
     assert exe.is_end()
-    assert exe._curr_state.checkName("ds2")
+    assert exe._curr_state.check_name("ds2")
     assert capsys.readouterr().out == "hello\n"
 
 
@@ -197,7 +197,7 @@ def test_machine_with_exception(capsys):
     mac.run()
 
     assert capsys.readouterr().out == 'p1\n'
-    assert mac.checkStatus(StateStatus.EXCEPTION)
+    assert mac.check_status(StateStatus.EXCEPTION)
     assert str(mac._internal_exception) == "raiseException"
     assert mac._exception_raised_state_name == "mac.re1"
 

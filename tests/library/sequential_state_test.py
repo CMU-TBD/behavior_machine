@@ -78,10 +78,10 @@ def test_interruption_in_sequential_state(capsys):
     sm.interrupt()
 
     assert capsys.readouterr().out == ""
-    assert sm.checkStatus(StateStatus.INTERRUPTED)
-    assert ws2.checkStatus(StateStatus.INTERRUPTED)
-    assert ws1.checkStatus(StateStatus.SUCCESS)
-    assert ps1.checkStatus(StateStatus.NOT_RUNNING)
+    assert sm.check_status(StateStatus.INTERRUPTED)
+    assert ws2.check_status(StateStatus.INTERRUPTED)
+    assert ws1.check_status(StateStatus.SUCCESS)
+    assert ps1.check_status(StateStatus.NOT_RUNNING)
     assert not sm._run_thread.is_alive()
     assert not ws1._run_thread.is_alive()
     assert not ws2._run_thread.is_alive()
@@ -113,7 +113,7 @@ def test_interruption_in_machines_with_sequential_state(capsys):
     iss = IdleState("iss")
     sm = SequentialState("sm", children=[ws1, ws2, ps1])
     sm.add_transition_on_success(es)
-    sm.add_transition(lambda s, b: s._curr_child.checkName('ws2'), iss)
+    sm.add_transition(lambda s, b: s._curr_child.check_name('ws2'), iss)
 
     exe = Machine("exe", sm, ["es", "iss"], rate=100)
     exe.run()
@@ -131,8 +131,8 @@ def test_interruption_in_machines_with_sequential_state(capsys):
     assert ws2._status == StateStatus.INTERRUPTED
     assert ws1._status == StateStatus.SUCCESS
     assert ps1._status == StateStatus.NOT_RUNNING
-    assert ws2.checkStatus(StateStatus.INTERRUPTED)
-    assert ws1.checkStatus(StateStatus.SUCCESS)
+    assert ws2.check_status(StateStatus.INTERRUPTED)
+    assert ws1.check_status(StateStatus.SUCCESS)
 
 
 def test_sequential_debug_info():

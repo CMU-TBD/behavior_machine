@@ -60,16 +60,16 @@ class ParallelState(NestedState):
         self._children_complete_event.wait()
 
         # if we got interupted out return INTERUPTED
-        if self._interupted_event.is_set():
+        if self.is_interrupted():
             return StateStatus.INTERRUPTED
 
         # if exception occur in one of the states
         if self._child_exception:
             # first make sure all of the states are interrupted
             for child in self._children:
-                if child.checkStatus(StateStatus.RUNNING):
+                if child.check_status(StateStatus.RUNNING):
                     child.interrupt()
-                elif child.checkStatus(StateStatus.EXCEPTION):
+                elif child.check_status(StateStatus.EXCEPTION):
                     self.propergate_exception_information(child)
             # return the exception state
             return StateStatus.EXCEPTION
@@ -77,7 +77,7 @@ class ParallelState(NestedState):
         # check the state of all the children & return success if and only if all are successful
         all_success = True
         for child in self._children:
-            if not child.checkStatus(StateStatus.SUCCESS):
+            if not child.check_status(StateStatus.SUCCESS):
                 all_success = False
         return StateStatus.SUCCESS if all_success else StateStatus.FAILED
 
@@ -89,12 +89,12 @@ class ParallelState(NestedState):
             at_least_one_running = False
             for child in self._children:
                 # if the child is running, tick it
-                if child.checkStatus(StateStatus.RUNNING):
+                if child.check_status(StateStatus.RUNNING):
                     at_least_one_running = True
                     child.tick(board)
-                elif child.checkStatus(StateStatus.FAILED):
+                elif child.check_status(StateStatus.FAILED):
                     self._children_complete_event.set()
-                elif child.checkStatus(StateStatus.EXCEPTION):
+                elif child.check_status(StateStatus.EXCEPTION):
                     self.propergate_exception_information(child)
                     self._child_exception = True
                     self._children_complete_event.set()

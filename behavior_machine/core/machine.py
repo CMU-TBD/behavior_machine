@@ -44,7 +44,7 @@ class Machine(NestedState):
 
     def execute(self, board: Board):
         # tick the internal states
-        while not self._interupted_event.is_set():
+        while not self.is_interrupted():
             time.sleep(self._rate)
             # check the internal states
             self.update(board)
@@ -65,7 +65,7 @@ class Machine(NestedState):
             if self.is_end():
                 return StateStatus.SUCCESS
             # check if the state or its nested states has thrown an exception
-            if self._curr_state.checkStatus(StateStatus.EXCEPTION):
+            if self._curr_state.check_status(StateStatus.EXCEPTION):
                 self.propergate_exception_information(self._curr_state)
                 return StateStatus.EXCEPTION
         return StateStatus.INTERRUPTED

@@ -110,3 +110,24 @@ def test_direct_flow():
     nextS.wait()
     assert nextS.flow_out == test_phrase2
 
+
+def test_debug_name():
+
+    class Null(State):
+        def execute(self, board: Board) -> StateStatus:
+            return StateStatus.SUCCESS
+    
+    n = Null("debug-test-state")
+    assert n.get_debug_name() == "debug-test-state(Null)"
+
+def test_debug_name_inherit():
+
+    class Null(State):
+        def execute(self, board: Board) -> StateStatus:
+            return StateStatus.SUCCESS
+    
+    class NullX(Null):
+        pass
+
+    n = NullX("debug-test-state")
+    assert n.get_debug_name() == "debug-test-state(NullX)" 

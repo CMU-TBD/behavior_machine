@@ -228,6 +228,14 @@ class State():
             'status': self._status
         }
 
+    def get_debug_name(self) -> str:
+        """ Return the name and type of state. Helps with debugging.
+
+        Returns:
+            str: Name and Type of State.
+        """
+        return f"{self._name}({self.__class__.__name__})"
+
     def pre_execute(self):
         pass
 

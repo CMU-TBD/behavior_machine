@@ -30,13 +30,13 @@ class SequentialState(NestedState):
         for child in self._children:
             with self._lock:
                 # once we in lock, check if we are interrupted
-                if self._interupted_event.is_set():
+                if self.is_interrupted():
                     return StateStatus.INTERRUPTED
                 self._curr_child = child
                 self._curr_child.start(board, flow_val)
             self._curr_child.wait()
             # check if we are done because of interrupt
-            if self._interupted_event.is_set():
+            if self.is_interrupted():
                 return StateStatus.INTERRUPTED
             status = self._curr_child._status
             if status == StateStatus.EXCEPTION:

@@ -20,7 +20,8 @@ class Machine(NestedState):
     _debug_cb: typing.Callable[[typing.Dict[str, typing.Any]], None]
     _logger: logging.Logger
 
-    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None, logger: logging.Logger = None):
+    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False,
+                 debug_cb=None, logger: logging.Logger = None):
         self._root = root
         self._curr_state = root
         self._started = False
@@ -44,7 +45,7 @@ class Machine(NestedState):
 
     def execute(self, board: Board):
         # tick the internal states
-        while not self._interupted_event.is_set():
+        while not self.is_interrupted():
             time.sleep(self._rate)
             # check the internal states
             self.update(board)
@@ -65,7 +66,7 @@ class Machine(NestedState):
             if self.is_end():
                 return StateStatus.SUCCESS
             # check if the state or its nested states has thrown an exception
-            if self._curr_state.checkStatus(StateStatus.EXCEPTION):
+            if self._curr_state.check_status(StateStatus.EXCEPTION):
                 self.propergate_exception_information(self._curr_state)
                 return StateStatus.EXCEPTION
         return StateStatus.INTERRUPTED

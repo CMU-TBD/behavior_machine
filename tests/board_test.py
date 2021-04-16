@@ -145,7 +145,7 @@ def test_object_set_get(capsys):
     exe.run()
     assert exe.is_end()
     assert exe._curr_state._status == StateStatus.SUCCESS
-    #assert exe._curr_state.checkStatus(StateStatus.SUCCESS)
+    #assert exe._curr_state.check_status(StateStatus.SUCCESS)
 
 
 def test_object_get_in_transition(capsys):

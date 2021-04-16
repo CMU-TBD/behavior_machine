@@ -26,3 +26,9 @@ m2.run()
 
 ## Documentation
 You can view more detailed documentation by following this [link](https://behavior-machine.readthedocs.io/en/latest/index.html)
+
+
+## TODO Lists:
+1. Implement flows for `ParallelState`. The idea would be the same flow value is duplicated (deep?) for each state
+2. Rethink flows for `SelectorState`.
+3. A better logging system.

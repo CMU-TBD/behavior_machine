@@ -1,10 +1,11 @@
 import typing
 import traceback
 import threading
+import warnings
 
 from .state_status import StateStatus
 from .board import Board
-from .utils import parse_debug_info
+
 
 class State():
 
@@ -34,7 +35,7 @@ class State():
         self.flow_in = None
         self.flow_out = None
 
-    def checkName(self, compare: str) -> bool:
+    def check_name(self, compare: str) -> bool:
         """Check if this state has the same name as the given state
 
         Parameters
@@ -49,7 +50,11 @@ class State():
         """
         return compare == self._name
 
-    def checkStatus(self, compare: StateStatus) -> bool:
+    def checkName(self, compare: str) -> bool:
+        warnings.warn("use check_name instead", DeprecationWarning)
+        return self.check_name(compare)
+
+    def check_status(self, compare: StateStatus) -> bool:
         """Check whether this states's status is the same as the given status
 
         Parameters
@@ -63,6 +68,10 @@ class State():
             True if the status is the same.
         """
         return self._status == compare
+
+    def checkStatus(self, compare: StateStatus) -> bool:
+        warnings.warn("use check_status instead", DeprecationWarning)
+        return self.check_status(compare)
 
     def add_transition(self, cond: typing.Callable[['State', Board], bool], next_state: 'State') -> None:
         """Add transition to the state. Provide a checking method (cond) that when returns true, will
@@ -79,7 +88,7 @@ class State():
         self._transitions.append((cond, next_state))
 
     def add_transition_on_complete(self, next_state: 'State') -> None:
-        """Add transition to this state where when the state finishes execution regardless of output, 
+        """Add transition to this state where when the state finishes execution regardless of output,
         it move tos the given state.
 
         Parameters
@@ -143,8 +152,7 @@ class State():
         self.flow_in = flow_in
         self.flow_out = None
         self._interupted_event.clear()
-        self._run_thread = threading.Thread(
-            target=self._execute, args=(board,), name=self._name)
+        self._run_thread = threading.Thread(target=self._execute, args=(board,), name=self._name)
         self._run_thread.start()
 
     def wait(self, timeout: float = None) -> bool:
@@ -218,6 +226,14 @@ class State():
             'type': type(self).__name__,
             'status': self._status
         }
+
+    def get_debug_name(self) -> str:
+        """ Return the name and type of state. Helps with debugging.
+
+        Returns:
+            str: Name and Type of State.
+        """
+        return f"{self._name}({self.__class__.__name__})"
 
     def pre_execute(self):
         pass

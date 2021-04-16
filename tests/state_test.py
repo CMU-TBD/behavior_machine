@@ -1,11 +1,5 @@
-import io
-import sys
 import time
-from os import wait
-
-import pytest
-
-from behavior_machine.core import Board, Machine, State, StateStatus
+from behavior_machine.core import Board, State, StateStatus
 
 
 def test_state_timeout(capsys):
@@ -43,6 +37,7 @@ def test_interrupt():
     assert t._status == StateStatus.NOT_SPECIFIED
     assert not t._run_thread.is_alive()
 
+
 def test_is_interrupted():
     class Interruptable(State):
         def execute(self, board):
@@ -54,7 +49,6 @@ def test_is_interrupted():
     t.wait()
     assert t._status == StateStatus.NOT_SPECIFIED
     assert not t._run_thread.is_alive()
-
 
 
 def test_exception_base(capsys):
@@ -83,6 +77,7 @@ def test_debug_info():
     assert info.get('status') == StateStatus.UNKNOWN
     assert info.get('type') == "StateName1"
 
+
 def test_direct_flow():
 
     test_phrase = "THIS_IS_FLOW"
@@ -92,13 +87,13 @@ def test_direct_flow():
         def execute(self, board):
             assert self.flow_in is None
             self.flow_out = test_phrase
-            return StateStatus.SUCCESS      
+            return StateStatus.SUCCESS
 
     class PostState(State):
-       def execute(self, board):
+        def execute(self, board):
             assert self.flow_in == test_phrase
             self.flow_out = test_phrase2
-            return StateStatus.SUCCESS        
+            return StateStatus.SUCCESS
 
     prior = PriorState("prior")
     post = PostState("post")
@@ -116,18 +111,81 @@ def test_debug_name():
     class Null(State):
         def execute(self, board: Board) -> StateStatus:
             return StateStatus.SUCCESS
-    
+
     n = Null("debug-test-state")
     assert n.get_debug_name() == "debug-test-state(Null)"
+
 
 def test_debug_name_inherit():
 
     class Null(State):
         def execute(self, board: Board) -> StateStatus:
             return StateStatus.SUCCESS
-    
+
     class NullX(Null):
         pass
 
     n = NullX("debug-test-state")
-    assert n.get_debug_name() == "debug-test-state(NullX)" 
+    assert n.get_debug_name() == "debug-test-state(NullX)"
+
+
+def test_node_rerunning():
+
+    counter = 0
+
+    class Fast(State):
+        def execute(self, board: Board) -> StateStatus:
+            nonlocal counter
+            counter += 1
+            time.sleep(0.1)
+            return StateStatus.SUCCESS
+
+    f = Fast("f")
+    assert f.check_status(StateStatus.UNKNOWN)
+    f.start(None)
+    assert f.check_status(StateStatus.RUNNING)
+    f.wait()
+    assert f.check_status(StateStatus.SUCCESS)
+    for i in range(1, 10):
+        assert counter == i
+        assert f.check_status(StateStatus.SUCCESS)
+        f.start(None)
+        assert f.check_status(StateStatus.RUNNING)
+        f.wait()
+        assert f.check_status(StateStatus.SUCCESS)
+
+
+def test_node_rerunning_with_connection():
+
+    counter = 0
+
+    class Fast(State):
+        def execute(self, board: Board) -> StateStatus:
+            nonlocal counter
+            counter += 1
+            time.sleep(0.1)
+            return StateStatus.SUCCESS
+
+    s1 = Fast("state1")
+    s2 = Fast("state2")
+
+    s1.add_transition_on_success(s2)
+    s2.add_transition_on_success(s1)
+
+    s1.start(None)
+    assert s1.check_status(StateStatus.RUNNING)
+    assert s2.check_status(StateStatus.UNKNOWN)
+    s1.wait()
+    nxt = s1.tick(None)
+    assert nxt.check_status(StateStatus.RUNNING)
+    assert nxt is s2
+    nxt = s2.tick(None)
+    assert nxt is s2
+    nxt.wait()
+    nxt = nxt.tick(None)
+    assert nxt is s1
+    assert counter == 3
+    for i in range(3, 10):
+        assert counter == i
+        nxt.wait()
+        nxt = nxt.tick(None)

@@ -1,11 +1,8 @@
 from behavior_machine.library import WaitState
 import pytest
-import sys
-import io
 import time
 
-from behavior_machine.core import Board
-from behavior_machine.core import State, StateStatus, Machine
+from behavior_machine.core import State, StateStatus, Machine, Board
 
 
 class PrintState(State):
@@ -54,12 +51,13 @@ def test_transition_on_failed(capsys):
     assert exe._curr_state.check_name("ps2")
     assert capsys.readouterr().out == "failed\n"
 
+
 def test_transition_on_complete(capsys):
 
     class NothingState(State):
         def execute(self, board):
             print("hello")
-    
+
     ds1 = DummyState("d1")
     ns = NothingState("ns")
     ds2 = DummyState("ds2")
@@ -114,10 +112,11 @@ def test_end_case():
     assert exe.is_end()
 
 
-# This test checks if machine is completed (is_end()) 
+# This test checks if machine is completed (is_end())
 # only after the endState finish execution.
 def test_end_case_delay(capsys):
     ps1 = PrintState("ps1", "Hello World")
+
     class EndState(State):
         def execute(self, board):
             time.sleep(0.5)
@@ -129,6 +128,7 @@ def test_end_case_delay(capsys):
     exe.run()
     assert exe.is_end()
     assert capsys.readouterr().out == "Hello World\ncompleted\n"
+
 
 def test_machine_rate_slow():
     ps1 = PrintState("ps1", "print1")  # execute at second 0
@@ -260,6 +260,7 @@ def test_interrupt_machine(capsys):
     mac.start(None)
     assert mac.interrupt()
 
+
 def test_flow_into_machine(capsys):
 
     test_phrase = "test_flow_into_machine"
@@ -268,10 +269,95 @@ def test_flow_into_machine(capsys):
         def execute(self, board):
             assert self.flow_in == test_phrase
             print("only-state")
-            return StateStatus.SUCCESS      
+            return StateStatus.SUCCESS
 
     os = OnlyState("only")
     mac = Machine("mac", os, ["only"])
-    mac.run(flow_in=test_phrase)    
-    assert mac.is_end()    
+    mac.run(flow_in=test_phrase)
+    assert mac.is_end()
     assert capsys.readouterr().out == "only-state\n"
+
+
+def test_repeat_node_in_machine():
+
+    counter = 0
+
+    class CounterState(State):
+        def execute(self, board: Board) -> StateStatus:
+            nonlocal counter
+            counter += 1
+            time.sleep(0.1)
+            return StateStatus.SUCCESS
+
+    ds1 = CounterState("ds1")
+    ds2 = CounterState("ds2")
+    ds3 = CounterState("ds3")
+    ds4 = CounterState("ds4")
+    ds5 = CounterState("ds5")
+
+    ds1.add_transition_on_success(ds2)
+    ds2.add_transition_on_success(ds3)
+    ds3.add_transition_on_success(ds4)
+    ds4.add_transition_on_success(ds5)
+    ds5.add_transition_on_success(ds1)
+
+    exe = Machine('exe', ds1, rate=5)
+    exe.start(None)
+    for i in range(1, 6):
+        time.sleep(1)
+        assert counter == i*5
+        assert exe._curr_state == ds5
+    exe.interrupt()
+    assert counter == (5 * 5) + 1
+
+
+def test_repeat_node_in_machine_fast():
+
+    counter = 0
+
+    class CounterState(State):
+        def execute(self, board: Board) -> StateStatus:
+            nonlocal counter
+            counter += 1
+            return StateStatus.SUCCESS
+
+    ds1 = CounterState("ds1")
+    ds2 = CounterState("ds2")
+    ds3 = CounterState("ds3")
+    ds1.add_transition_on_success(ds2)
+    ds2.add_transition_on_success(ds3)
+    ds3.add_transition_on_success(ds1)
+
+    exe = Machine('exe', ds1, rate=60)
+    exe.start(None)
+    time.sleep(2)
+    exe.interrupt()
+    # the performance of the computer might change this.
+    assert counter >= (60 * 2) - 2
+    assert counter <= (60 * 2) + 1
+
+
+def test_validate_transition_immediate():
+
+    counter = 0
+
+    class CounterState(State):
+        def execute(self, board: Board) -> StateStatus:
+            nonlocal counter
+            counter += 1
+            return StateStatus.SUCCESS
+
+    ds1 = CounterState("ds1")
+    ds2 = CounterState("ds2")
+    ds3 = CounterState("ds3")
+    ds1.add_transition(lambda s, b: True, ds2)
+    ds2.add_transition(lambda s, b: True, ds3)
+    ds3.add_transition(lambda s, b: True, ds1)
+
+    exe = Machine('exe', ds1, rate=60)
+    exe.start(None)
+    time.sleep(2)
+    exe.interrupt()
+    # the performance of the computer might change this.
+    assert counter >= (60 * 2) - 2
+    assert counter <= (60 * 2) + 1

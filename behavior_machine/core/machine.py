@@ -20,7 +20,8 @@ class Machine(NestedState):
     _debug_cb: typing.Callable[[typing.Dict[str, typing.Any]], None]
     _logger: logging.Logger
 
-    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None, logger: logging.Logger = None):
+    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False,
+                 debug_cb=None, logger: logging.Logger = None):
         self._root = root
         self._curr_state = root
         self._started = False

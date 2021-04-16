@@ -5,7 +5,7 @@ import warnings
 
 from .state_status import StateStatus
 from .board import Board
-from .utils import parse_debug_info
+
 
 class State():
 
@@ -88,7 +88,7 @@ class State():
         self._transitions.append((cond, next_state))
 
     def add_transition_on_complete(self, next_state: 'State') -> None:
-        """Add transition to this state where when the state finishes execution regardless of output, 
+        """Add transition to this state where when the state finishes execution regardless of output,
         it move tos the given state.
 
         Parameters
@@ -152,8 +152,7 @@ class State():
         self.flow_in = flow_in
         self.flow_out = None
         self._interupted_event.clear()
-        self._run_thread = threading.Thread(
-            target=self._execute, args=(board,), name=self._name)
+        self._run_thread = threading.Thread(target=self._execute, args=(board,), name=self._name)
         self._run_thread.start()
 
     def wait(self, timeout: float = None) -> bool:

@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(name='behavior_machine',
-                 version='0.3.0',
+                 version='0.3.1',
                  description='An implementation of a behavior tree + hierarchical state machine hybrid.',
                  long_description=long_description,
                  long_description_content_type="text/markdown",

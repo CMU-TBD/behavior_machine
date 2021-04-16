@@ -1,5 +1,6 @@
 import enum
 
+
 @enum.unique
 class StateStatus(enum.Enum):
     UNKNOWN = -1     # Unknown

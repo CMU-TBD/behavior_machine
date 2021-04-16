@@ -1,10 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.1] - 2021-04-15
 - **[Added]** Added `SelectorState` that mimics `Selector` in behavior trees. The state run the children in order until one of them returns `success`.
-- **[Changed]** `check_name` replace `checkName` and `check_status` replace `checkStatus`. The old code redirects to the new functions but throws depreciating warnings.
 - **[Added]** debugging function `get_debug_name` that returns a string with name + type to help debugging and loggin.
 - **[Added]** More tests for different edge cases around transitions when reusing nodes.
+- **[Changed]** `check_name` replace `checkName` and `check_status` replace `checkStatus`. The old code redirects to the new functions but throws depreciating warnings.
 - **[Fixed]** linting problems throughout the program.
 
 ## [0.3.0] - 2021-04-07

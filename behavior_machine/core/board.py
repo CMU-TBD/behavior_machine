@@ -1,4 +1,3 @@
-
 import threading
 import typing
 import copy
@@ -11,7 +10,7 @@ class Board():
         self._lock = threading.RLock()
 
     def get(self, key: str, deep_copy: bool = True) -> typing.Any:
-        """Get the object associated with the key from the board. If the key doesn't exist, None is returned. 
+        """Get the object associated with the key from the board. If the key doesn't exist, None is returned.
         By default, a deep copy of the object/variable is made. You can change this by setting deep_copy = False.
 
         Parameters
@@ -52,7 +51,7 @@ class Board():
                 self._map[key] = copy.deepcopy(value)
             else:
                 self._map[key] = value
-                
+
     def exist(self, key: str) -> bool:
         """Checks whether a key already exist in the board.
 

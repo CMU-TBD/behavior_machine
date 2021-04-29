@@ -44,7 +44,15 @@ class ParallelState(NestedState):
         return not self._run_thread.is_alive()
         # return super().interrupt(timeout=timeout)
 
-    def execute(self, board: Board):
+    def _statestatus_criteria(self) -> StateStatus:
+        # check the state of all the children & return success if and only if all are successful
+        all_success = True
+        for child in self._children:
+            if not child.check_status(StateStatus.SUCCESS):
+                all_success = False
+        return StateStatus.SUCCESS if all_success else StateStatus.FAILED
+
+    def execute(self, board: Board) -> StateStatus:
 
         # clear the event flag before starting
         self._children_complete_event.clear()
@@ -74,14 +82,10 @@ class ParallelState(NestedState):
             # return the exception state
             return StateStatus.EXCEPTION
 
-        # check the state of all the children & return success if and only if all are successful
-        all_success = True
-        for child in self._children:
-            if not child.check_status(StateStatus.SUCCESS):
-                all_success = False
-        return StateStatus.SUCCESS if all_success else StateStatus.FAILED
+        return self._statestatus_criteria()
 
-    def tick(self, board):
+    def tick(self, board: Board):
+        # Note, this is very similar to the AtLeastOneState's tick function. Any fixes should also be applied there.
         # check if we should transition out of this state
         next_state = super().tick(board)
         if next_state == self:
@@ -103,14 +107,15 @@ class ParallelState(NestedState):
                 self._children_complete_event.set()
             # return itself since nothing transitioned
             return self
-        # we are going to a new start, interrupt everthing that is going on
-        if not self.interrupt():
-            # we wasn't able to complete the interruption.
-            # This is bad.. meaning there are bunch of zombie threads running about
-            print(
-                f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
-                    Zombie threads likely", file=sys.stderr)
-        return next_state
+        else:
+            # we are going to a new start, interrupt everthing that is going on
+            if not self.interrupt():
+                # we wasn't able to complete the interruption.
+                # This is bad.. meaning there are bunch of zombie threads running about
+                print(
+                    f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
+                        Zombie threads likely", file=sys.stderr)
+            return next_state
 
     def get_debug_info(self) -> typing.Dict[str, typing.Any]:
 

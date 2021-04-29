@@ -1,7 +1,8 @@
 import typing
 
 
-def parse_debug_info(info: typing.Dict[str, typing.Any], spacing: int = 0, margin: int = 2, prefix: str = "") -> typing.List[str]:
+def parse_debug_info(info: typing.Dict[str, typing.Any], spacing: int = 0, margin: int = 2,
+                     prefix: str = "") -> typing.List[str]:
 
     ori_str = f'{prefix}{info["name"]}({info["type"]}) -- {info["status"].name}'
     str_list = [ori_str.rjust(len(ori_str) + spacing)]

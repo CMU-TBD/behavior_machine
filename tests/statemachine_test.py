@@ -260,7 +260,6 @@ def test_interrupt_machine(capsys):
     mac.start(None)
     assert mac.interrupt()
 
-
 def test_flow_into_machine(capsys):
 
     test_phrase = "test_flow_into_machine"

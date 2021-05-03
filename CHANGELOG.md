@@ -4,6 +4,9 @@
 - **[Added]** `SaveFlowState`, `SetFlowFromBoardState` and `SetFlowState`. Three states that help with board access.
 - **[Added]** Tests for the three flow access states.
 
+## [0.3.2] - 2021-04-16
+- **[Added]** `AtLeastOneState` that ends when one of its children states completes (all are run parallely) and return `success`. 
+
 ## [0.3.1] - 2021-04-15
 - **[Added]** Added `SelectorState` that mimics `Selector` in behavior trees. The state run the children in order until one of them returns `success`.
 - **[Added]** debugging function `get_debug_name` that returns a string with name + type to help debugging and loggin.

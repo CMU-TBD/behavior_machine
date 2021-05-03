@@ -121,3 +121,35 @@ class SetFlowFromBoardState(State):
         else:
             self.flow_out = val
             return StateStatus.SUCCESS
+
+class SetBoardState(State):
+
+    _val: str
+    _key: str
+
+    def __init__(self, name:str, key:str, val:Any = None):
+        super().__init__(name)
+        self._val = val
+        self._key = key
+
+    def execute(self, board: Board):
+        if self._val is not None:
+            board.set(self._key, self._val)
+        elif self.flow_in is not None:
+            board.set(self._key, self.flow_in)
+        else:
+            return StateStatus.FAILED
+        return StateStatus.SUCCESS
+
+
+class GetBoardState(State):
+
+    _key: str
+
+    def __init__(self, name:str, key:str):
+        super().__init__(name)
+        self._key = key
+
+    def execute(self, board: Board):
+        self.flow_out = board.get(self._key)
+        return StateStatus.SUCCESS

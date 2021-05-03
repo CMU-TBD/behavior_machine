@@ -1,7 +1,7 @@
 # Changelog
 
-## [Unreleased]
-- **[Added]** `SaveFlowState`, `SetFlowFromBoardState` and `SetFlowState`. Three states that help with board access.
+## [0.3.3] - 2021-05-03 
+- **[Added]** `SaveFlowState`, `SetFlowFromBoardState`,`SetBoardState`,`GetBoardState` and `SetFlowState`. Three states that help with board access.
 - **[Added]** Tests for the three flow access states.
 
 ## [0.3.2] - 2021-04-16

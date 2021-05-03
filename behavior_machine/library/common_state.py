@@ -33,7 +33,7 @@ class WaitState(State):
         name : str
             Name of the state, useful in Debugging
         duration : float
-            Time to wait before returnning from this state
+            Time to wait before returning from this state
         """
         self._duration = duration
         self._check_interval = 0.1

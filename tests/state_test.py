@@ -77,7 +77,6 @@ def test_debug_info():
     assert info.get('status') == StateStatus.UNKNOWN
     assert info.get('type') == "StateName1"
 
-
 def test_direct_flow():
 
     test_phrase = "THIS_IS_FLOW"

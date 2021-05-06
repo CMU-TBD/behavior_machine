@@ -5,7 +5,7 @@ import copy
 class IdleState(State):
 
     def __init__(self, name: str):
-        """Constructor for IdleState
+        """Constructor for IdleState. This state will always return StateStatus.RUNNING.
 
         Parameters
         ----------

@@ -65,6 +65,7 @@ class ParallelState(NestedState):
             child.start(board)
 
         # we delegate the checking of children state to the tick function OR execute, we wait here
+        # TODO This might be a bad pattern, cause it will need a tick to transition out. This defers from SequentialState
         self._children_complete_event.wait()
 
         # if we got interupted out return INTERUPTED

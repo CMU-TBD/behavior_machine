@@ -45,7 +45,8 @@ class Machine(NestedState):
     def execute(self, board: Board):
         # tick the internal states
         while not self.is_interrupted():
-            time.sleep(self._rate)
+            # start time
+            start_time_tick = time.time()
             # check the internal states
             self.update(board)
             # we publish any debug information if requested
@@ -68,6 +69,18 @@ class Machine(NestedState):
             if self._curr_state.check_status(StateStatus.EXCEPTION):
                 self.propergate_exception_information(self._curr_state)
                 return StateStatus.EXCEPTION
+
+            #TODO this part probably can be improved through better code + CPYTHON implementaions
+            # sleep for the remaining time
+            passed_time = time.time() - start_time_tick
+            if passed_time > self._rate:
+                # warn about slow tick rate
+                if self._logger is not None:
+                    self._logger.warn(f"Machine{self.get_debug_name()} \
+                        ticking at {passed_time} which is larger than {self._rate}")
+            else:
+                time.sleep(self._rate - passed_time)
+
         return StateStatus.INTERRUPTED
 
     def tick(self, board: Board) -> State:

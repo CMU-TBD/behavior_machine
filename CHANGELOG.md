@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- **[Fixed]** Machine now only waits for the remaining time instead of always waiting the fix amount.
+
 ## [0.3.3] - 2021-05-03 
 - **[Added]** `SaveFlowState`, `SetFlowFromBoardState`,`SetBoardState`,`GetBoardState` and `SetFlowState`. Three states that help with board access.
 - **[Added]** Tests for the three flow access states.

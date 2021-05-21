@@ -85,7 +85,7 @@ def _recursive_visualize_state(state: State, graph: pgv.AGraph, visited_list: ty
             if sub_graph is None:
                 graph.add_edge(valid_node_name, nxt_valid_node_name, lhead=nxt_graph.name)
             else:
-                graph.add_edge(valid_node_name, nxt_valid_node_name, ltail=sub_graph.name, lhead=nxt_graph.name)
+                graph.add_edge(valid_node_name, nxt_valid_node_name, ltail=sub_graph.name, lhead=nxt_cluster_name)
     
     return valid_node_name
 

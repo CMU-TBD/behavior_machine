@@ -1,3 +1,4 @@
+import time
 import typing
 import traceback
 import threading
@@ -25,6 +26,10 @@ class State():
     flow_in: typing.Any
     flow_out: typing.Any
 
+    # information about state
+    _state_last_start_time: float
+    _state_last_end_time: float
+
     def __init__(self, name):
         self._name = name
         self._transitions = []
@@ -34,6 +39,8 @@ class State():
         self._status = StateStatus.UNKNOWN
         self.flow_in = None
         self.flow_out = None
+        self._state_last_end_time = -1
+        self._state_last_start_time = -1
 
     def check_name(self, compare: str) -> bool:
         """Check if this state has the same name as the given state
@@ -236,7 +243,8 @@ class State():
         return f"{self._name}({self.__class__.__name__})"
 
     def pre_execute(self):
-        pass
+        self._state_last_start_time = time.time()
 
     def post_execute(self):
+        self._state_last_end_time = time.time()
         pass

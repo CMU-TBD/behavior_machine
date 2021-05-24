@@ -5,8 +5,6 @@ from behavior_machine.core import State, Machine, Board, StateStatus
 from behavior_machine.library import IdleState
 from behavior_machine.visualization import visualize_behavior_machine
 
-
-
 def make_machine(name):
     s1 = IdleState("s1")
     s2 = IdleState("s2")
@@ -27,6 +25,8 @@ ss = SequentialState("ss", children=[
     IdleState("i3"),
     IdleState("i4"),
 ])
+m1.add_transition(lambda s,b: True, ss)
+
 pp = ParallelState("pp", children=[
     IdleState("i1"),
     IdleState("i2"),
@@ -36,7 +36,6 @@ xe.add_transition_on_complete(ss)
 xe.add_transition_on_complete(pp)
 
 
-
 exe = Machine('exe', m1, rate=5)
 
-visualize_behavior_machine(exe, "mac.png")
+visualize_behavior_machine(exe, "example1.png")

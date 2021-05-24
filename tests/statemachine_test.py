@@ -248,8 +248,10 @@ def test_debugging_machine(caplog):
     mac = Machine("mac", s1, ["s2"], debug=True, rate=1, logger=logger)
     mac.run()
     assert mac.is_end()
-    assert caplog.records[0].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING"
-    assert caplog.records[1].message == "[Base] mac(Machine) -- RUNNING\n  -> s2(DummyState) -- SUCCESS"
+    assert len(caplog.records) == 3
+    assert caplog.records[0].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING" # This is at t=0
+    assert caplog.records[1].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING" # This is at t=1 
+    assert caplog.records[2].message == "[Base] mac(Machine) -- RUNNING\n  -> s2(DummyState) -- SUCCESS" # At the end
 
 
 def test_interrupt_machine(capsys):
@@ -307,4 +309,4 @@ def test_repeat_node_in_machine():
         assert counter == i*5
         assert exe._curr_state == ds5
     exe.interrupt()
-    assert counter == (5 * 5) + 1
+    assert counter == (5 * 5)

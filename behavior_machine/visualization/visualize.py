@@ -49,7 +49,7 @@ def _recursive_visualize_state(state: State, graph: pgv.AGraph, visited_list: ty
                 prev_valid_name = ""
                 for children in state._children:
                     valid_node_name = _recursive_visualize_state(children, sub_graph, [], {})
-                    if prev_valid_name is not "":
+                    if prev_valid_name != "":
                         sub_graph.add_edge(prev_valid_name, valid_node_name)
                     prev_valid_name = valid_node_name
             else:

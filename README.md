@@ -24,6 +24,8 @@ m2 = Machine("m2", m1, end_state_ids=['is1'], rate=10)
 m2.run()
 ```
 
+![Example](examples/readme.png)
+
 ## Documentation
 You can view more detailed documentation by following this [link](https://behavior-machine.readthedocs.io/en/latest/index.html)
 

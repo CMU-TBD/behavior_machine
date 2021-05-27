@@ -8,6 +8,7 @@
 - **[Fixed]** Machine now only waits for the remaining time instead of always waiting the fixed amount. Also Fixed tests with weird behavior about the waiting.
 - **[Fixed]** Possible bug where Atleast returns result due to race condition.
 - **[Fixed]** bug where interrupts crashs the application if called before the state starts.
+- **[Fixed]** bug in test where sometimes states completed way too fast.
 
 ## [0.3.3] - 2021-05-03 
 - **[Added]** `SaveFlowState`, `SetFlowFromBoardState`,`SetBoardState`,`GetBoardState` and `SetFlowState`. Three states that help with board access.

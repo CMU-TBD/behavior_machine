@@ -131,30 +131,33 @@ def test_end_case_delay(capsys):
 
 
 def test_machine_rate_slow():
-    ps1 = PrintState("ps1", "print1")  # execute at second 0
-    ps2 = PrintState("ps1", "print2")  # execute at second 2
+    w1 = WaitState("w1", 0.1) # execute at second 0
+    w2 = WaitState("w2", 0.1) # execute at second 2
     es = DummyState("endState")  # execute at second 4
-    ps1.add_transition_on_success(ps2)
-    ps2.add_transition_on_success(es)
-    exe = Machine("xe", ps1, end_state_ids=["endState"], rate=0.5)
+    w1.add_transition_on_success(w1)
+    w2.add_transition_on_success(es)
+    exe = Machine("xe", w1, end_state_ids=["endState"], rate=0.5)
     start_time = time.time()
     exe.run()
     duration = time.time() - start_time
     assert pytest.approx(duration, rel=1e-2) == 4
+    assert w1._status == StateStatus.SUCCESS
+    assert w2._status == StateStatus.SUCCESS
 
 
 def test_machine_rate_fast():
-    ps1 = PrintState("ps1", "print1")  # execute at second 0
-    ps2 = PrintState("ps1", "print2")  # execute at second 0.1
+    w1 = WaitState("w1", 0.05) # execute at second 0
+    w2 = WaitState("w2", 0.05) # execute at second 0.1
     es = DummyState("endState")  # execute at second 0.2
-    ps1.add_transition_on_success(ps2)
-    ps2.add_transition_on_success(es)
-    exe = Machine("xe", ps1, end_state_ids=["endState"], rate=10)
+    w1.add_transition_on_success(w1)
+    w2.add_transition_on_success(es)
+    exe = Machine("xe", w1, end_state_ids=["endState"], rate=10)
     start_time = time.time()
     exe.run()
     duration = time.time() - start_time
     assert pytest.approx(duration, abs=1e-2) == 0.2
-
+    assert w1._status == StateStatus.SUCCESS
+    assert w2._status == StateStatus.SUCCESS
 
 def test_nested_machine(capsys):
 

@@ -23,6 +23,7 @@ class SequentialState(NestedState):
         child: State
         for child in self._children:
             child._status = StateStatus.NOT_RUNNING
+        return super().pre_execute()
 
     def execute(self, board: Board):
         flow_val = self.flow_in
@@ -57,9 +58,8 @@ class SequentialState(NestedState):
                 # Attribution error happens if child node is empty
                 # Possible race condition at the beginning where interupt gets call before we start initializing
                 pass
-        # wait for thread to end
-        self._run_thread.join(timeout)
-        return not self._run_thread.is_alive()
+        # now we call the parent function to clear the running thread
+        return super().interrupt(timeout)
 
     def tick(self, board):
         next_state = super().tick(board)

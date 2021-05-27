@@ -62,7 +62,7 @@ def test_multiple_parallel_states():
         def execute(self, board: Board) -> StateStatus:
             return StateStatus.SUCCESS
 
-    num_parallel = 1000
+    num_parallel = 500
     child_states = []
     for i in range(0, num_parallel):
         child_states.append(CompleteState(f"I{i}"))

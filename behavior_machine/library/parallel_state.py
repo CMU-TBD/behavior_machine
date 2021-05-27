@@ -25,6 +25,11 @@ class ParallelState(NestedState):
         child: State
         for child in self._children:
             child._status = StateStatus.NOT_RUNNING
+        # clear the event flag before starting
+        self._children_complete_event.clear()
+        self._child_exception = False
+        return super().pre_execute()
+
 
     def interrupt(self, timeout=None):
         # set our own flag to be true
@@ -40,9 +45,7 @@ class ParallelState(NestedState):
         # set the complete loop
         self._children_complete_event.set()
         # we wait for the main thread to stop
-        self._run_thread.join(timeout)
-        return not self._run_thread.is_alive()
-        # return super().interrupt(timeout=timeout)
+        return super().interrupt(timeout=timeout)
 
     def _statestatus_criteria(self) -> StateStatus:
         # check the state of all the children & return success if and only if all are successful
@@ -53,10 +56,6 @@ class ParallelState(NestedState):
         return StateStatus.SUCCESS if all_success else StateStatus.FAILED
 
     def execute(self, board: Board) -> StateStatus:
-
-        # clear the event flag before starting
-        self._children_complete_event.clear()
-        self._child_exception = False
 
         # execute all the children as new threads
         for child in self._children:
@@ -103,6 +102,9 @@ class ParallelState(NestedState):
                     self.propergate_exception_information(child)
                     self._child_exception = True
                     self._children_complete_event.set()
+                elif child.check_status(StateStatus.NOT_RUNNING):
+                    # This is likely an edge case where the child hasn't start being check yet.
+                    at_least_one_running = True
             # if all child already done, we need to let the main process knows
             if not at_least_one_running:
                 self._children_complete_event.set()

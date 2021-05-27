@@ -3,8 +3,11 @@
 ## [0.3.4] - 2021-05-24
 - **[Added]** Added example of the visualization on first page.
 - **[Added]** `behavior_machine.visualization` which has function `visualize_behavior_machine` that can visualize any machine and it's subcomponents.
+- **[Added]** Shorthand transition to transition after certain time.
 - **[Added]** Examples and tests of visualization under the folder `viz_test`
 - **[Fixed]** Machine now only waits for the remaining time instead of always waiting the fixed amount. Also Fixed tests with weird behavior about the waiting.
+- **[Fixed]** Possible bug where Atleast returns result due to race condition.
+- **[Fixed]** bug where interrupts crashs the application if called before the state starts.
 
 ## [0.3.3] - 2021-05-03 
 - **[Added]** `SaveFlowState`, `SetFlowFromBoardState`,`SetBoardState`,`GetBoardState` and `SetFlowState`. Three states that help with board access.

@@ -171,16 +171,15 @@ def test_interrupt_in_parallel_state(capsys):
     es = IdleState("es")
     pm = ParallelState('pm', [ws, ws2])
     pm.add_transition_on_success(es)
-    pm.add_transition(lambda x, y: True, es)
+    pm.add_transition_after_elapsed(es, 0.1)
     exe = Machine("main_machine", pm, end_state_ids=['es'], rate=10)
     # run machine
     exe.start(None)
-    # because of the always transition, it should happen in about 10
+    # because of the elapsed transition, the machine will immediate transition to the end state in 0.1 seconds
     assert exe.wait(0.2)
-    assert ws.check_status(StateStatus.INTERRUPTED)
-    assert ws2.check_status(StateStatus.INTERRUPTED)
+    assert ws._status == StateStatus.INTERRUPTED
+    assert ws2._status == StateStatus.INTERRUPTED
     assert not pm._run_thread.is_alive()
-
 
 def test_parallel_state_performance(capsys):
 

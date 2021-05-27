@@ -34,6 +34,9 @@ class AtLeastOneState(ParallelState):
                     self.propergate_exception_information(child)
                     self._child_exception = True
                     self._children_complete_event.set()
+                # elif child.check_status(StateStatus.NOT_RUNNING):
+                #     # This is likely an edge case where the child hasn't start being check yet.
+                #     at_least_one_running = True
             # if all child already done, we need to let the main process knows
             if not at_least_one_running:
                 self._children_complete_event.set()

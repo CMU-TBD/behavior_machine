@@ -33,6 +33,7 @@ class Machine(NestedState):
 
     def start(self, board: Board, flow_in: typing.Any = None, manual_exec=False) -> None:
         # Overwrites States' start
+        self._status = StateStatus.RUNNING
         # Method that is called when first enter this state.
         self._curr_state = self._root
         self._interupted_event.clear()

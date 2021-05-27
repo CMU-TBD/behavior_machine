@@ -140,7 +140,7 @@ def test_machine_rate_slow():
     start_time = time.time()
     exe.run()
     duration = time.time() - start_time
-    assert 4 == pytest.approx(duration, rel=1e-2)
+    assert pytest.approx(duration, rel=1e-2) == 4
 
 
 def test_machine_rate_fast():
@@ -153,7 +153,7 @@ def test_machine_rate_fast():
     start_time = time.time()
     exe.run()
     duration = time.time() - start_time
-    assert 0.2 == pytest.approx(duration, abs=1e-2)
+    assert pytest.approx(duration, abs=1e-2) == 0.2
 
 
 def test_nested_machine(capsys):

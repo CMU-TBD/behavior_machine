@@ -94,6 +94,26 @@ class State():
         """
         self._transitions.append((cond, next_state))
 
+    def add_transition_after_elapsed(self, next_state: 'State', duration: float) -> None:
+        """Add transition to this state that moves to the next state after a fixed duration has
+        passed since the state start execution.
+
+        Parameters
+        ----------
+        next_state : State
+            Next state to go to.
+        duration : float
+            Time in seconds that should have passed before transitioning.
+        """
+
+        def timepassed(s: 'State', b: 'Board'):
+            if s._state_last_start_time > 0 and duration >= 0:
+                curr_time = time.time()
+                if (curr_time - s._state_last_start_time) > duration:
+                    return True
+            return False
+        self.add_transition(timepassed, next_state)
+
     def add_transition_on_complete(self, next_state: 'State') -> None:
         """Add transition to this state where when the state finishes execution regardless of output,
         it move tos the given state.
@@ -183,9 +203,13 @@ class State():
     def interrupt(self, timeout: float = None) -> bool:
         # signal the execute method to be interrupted.
         self._interupted_event.set()
-        self._run_thread.join(timeout)
-        # TODO check if this creates a race condition, is_alive() might still be true immediately after run() ends.
-        return not self._run_thread.is_alive()
+        if self._run_thread is not None:
+            if self._run_thread.is_alive():
+                self._run_thread.join(timeout)
+            # TODO check if this creates a race condition, is_alive() might still be true immediately after run() ends.
+            return not self._run_thread.is_alive()
+        else:
+            return True
 
     def is_interrupted(self) -> bool:
         """Method to check whether the state itself is being interrupted

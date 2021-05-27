@@ -54,3 +54,24 @@ def test_atleastone_interrupt(capsys):
 
     assert capsys.readouterr().out == "ps5\n"
     assert interrupted
+
+
+def test_checking_too_fast():
+
+    class SuccessState(State):
+
+        def execute(self, board: Board) -> StateStatus:
+            time.sleep(1)
+            return StateStatus.SUCCESS
+        
+
+    one = AtLeastOneState("one", children=[
+        SuccessState("is1"),
+        SuccessState("is2"),
+    ])
+    exe = Machine("xe", one, end_state_ids=["one"], rate=500)
+    exe.tick(None)
+    exe.run(None)
+
+    assert one._status == StateStatus.SUCCESS
+

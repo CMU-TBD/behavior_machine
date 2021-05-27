@@ -1,6 +1,8 @@
 from typing import Any
+import typing
 from ..core import StateStatus, State, Board
 import copy
+
 
 class IdleState(State):
 
@@ -50,12 +52,14 @@ class WaitState(State):
             # timeout
             return StateStatus.SUCCESS
 
+
 class SaveFlowState(State):
     """
     State that saves the flow in variable into the board
     """
 
     _key: str
+
     def __init__(self, name: str, key: str):
         """Constructor for SaveFlowState
 
@@ -71,6 +75,7 @@ class SaveFlowState(State):
             return StateStatus.FAILED
         board.set(self._key, self.flow_in)
         return StateStatus.SUCCESS
+
 
 class SetFlowState(State):
     """
@@ -97,6 +102,7 @@ class SetFlowState(State):
         self.flow_out = self._val
         return StateStatus.SUCCESS
 
+
 class SetFlowFromBoardState(State):
     """
     State that sets the flow with the value stored in the board
@@ -122,19 +128,24 @@ class SetFlowFromBoardState(State):
             self.flow_out = val
             return StateStatus.SUCCESS
 
+
 class SetBoardState(State):
 
-    _val: str
+    _val: typing.Any
     _key: str
 
-    def __init__(self, name:str, key:str, val:Any = None):
+    def __init__(self, name: str, key: str, val: Any = None):
         super().__init__(name)
         self._val = val
         self._key = key
 
     def execute(self, board: Board):
         if self._val is not None:
-            board.set(self._key, self._val)
+            # special case if the value is a lambda
+            if callable(self._val):
+                board.set(self._key, self._val())
+            else:
+                board.set(self._key, self._val)
         elif self.flow_in is not None:
             board.set(self._key, self.flow_in)
         else:
@@ -146,7 +157,7 @@ class GetBoardState(State):
 
     _key: str
 
-    def __init__(self, name:str, key:str):
+    def __init__(self, name: str, key: str):
         super().__init__(name)
         self._key = key
 

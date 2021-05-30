@@ -134,7 +134,7 @@ def test_machine_rate_slow():
     w1 = WaitState("w1", 0.1) # execute at second 0
     w2 = WaitState("w2", 0.1) # execute at second 2
     es = DummyState("endState")  # execute at second 4
-    w1.add_transition_on_success(w1)
+    w1.add_transition_on_success(w2)
     w2.add_transition_on_success(es)
     exe = Machine("xe", w1, end_state_ids=["endState"], rate=0.5)
     start_time = time.time()
@@ -147,9 +147,9 @@ def test_machine_rate_slow():
 
 def test_machine_rate_fast():
     w1 = WaitState("w1", 0.05) # execute at second 0
-    w2 = WaitState("w2", 0.05) # execute at second 0.1
+    w2 = WaitState("w2", 0.05) # execute at second 0.1s
     es = DummyState("endState")  # execute at second 0.2
-    w1.add_transition_on_success(w1)
+    w1.add_transition_on_success(w2)
     w2.add_transition_on_success(es)
     exe = Machine("xe", w1, end_state_ids=["endState"], rate=10)
     start_time = time.time()

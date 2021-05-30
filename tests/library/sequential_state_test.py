@@ -205,3 +205,10 @@ def test_sequential_state_flow(capsys):
     me.start(None)
     me.wait()
     assert capsys.readouterr().out == "one\ntwo\n"
+
+def test_sequential_state_interrupt_before_start():
+    seq = SequentialState("seq", children=[
+        WaitState("w1", 1),
+        WaitState("w2", 2)
+    ])
+    seq.interrupt()

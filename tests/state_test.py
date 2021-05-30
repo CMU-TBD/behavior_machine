@@ -188,3 +188,12 @@ def test_node_rerunning_with_connection():
         assert counter == i
         nxt.wait()
         nxt = nxt.tick(None)
+
+def test_call_interrupt_before_start():
+    class example(State):
+        def execute(self, board: Board) -> StateStatus:
+            return StateStatus.SUCCESS
+
+    s = example('s')
+    s.interrupt()
+    

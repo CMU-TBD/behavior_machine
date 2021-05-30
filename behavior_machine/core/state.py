@@ -1,3 +1,4 @@
+import time
 import typing
 import traceback
 import threading
@@ -25,6 +26,10 @@ class State():
     flow_in: typing.Any
     flow_out: typing.Any
 
+    # information about state
+    _state_last_start_time: float
+    _state_last_end_time: float
+
     def __init__(self, name):
         self._name = name
         self._transitions = []
@@ -34,6 +39,8 @@ class State():
         self._status = StateStatus.UNKNOWN
         self.flow_in = None
         self.flow_out = None
+        self._state_last_end_time = -1
+        self._state_last_start_time = -1
 
     def check_name(self, compare: str) -> bool:
         """Check if this state has the same name as the given state
@@ -86,6 +93,26 @@ class State():
             The next state to go to.
         """
         self._transitions.append((cond, next_state))
+
+    def add_transition_after_elapsed(self, next_state: 'State', duration: float) -> None:
+        """Add transition to this state that moves to the next state after a fixed duration has
+        passed since the state start execution.
+
+        Parameters
+        ----------
+        next_state : State
+            Next state to go to.
+        duration : float
+            Time in seconds that should have passed before transitioning.
+        """
+
+        def timepassed(s: 'State', b: 'Board'):
+            if s._state_last_start_time > 0 and duration >= 0:
+                curr_time = time.time()
+                if (curr_time - s._state_last_start_time) > duration:
+                    return True
+            return False
+        self.add_transition(timepassed, next_state)
 
     def add_transition_on_complete(self, next_state: 'State') -> None:
         """Add transition to this state where when the state finishes execution regardless of output,
@@ -176,9 +203,13 @@ class State():
     def interrupt(self, timeout: float = None) -> bool:
         # signal the execute method to be interrupted.
         self._interupted_event.set()
-        self._run_thread.join(timeout)
-        # TODO check if this creates a race condition, is_alive() might still be true immediately after run() ends.
-        return not self._run_thread.is_alive()
+        if self._run_thread is not None:
+            if self._run_thread.is_alive():
+                self._run_thread.join(timeout)
+            # TODO check if this creates a race condition, is_alive() might still be true immediately after run() ends.
+            return not self._run_thread.is_alive()
+        else:
+            return True
 
     def is_interrupted(self) -> bool:
         """Method to check whether the state itself is being interrupted
@@ -236,7 +267,8 @@ class State():
         return f"{self._name}({self.__class__.__name__})"
 
     def pre_execute(self):
-        pass
+        self._state_last_start_time = time.time()
 
     def post_execute(self):
+        self._state_last_end_time = time.time()
         pass

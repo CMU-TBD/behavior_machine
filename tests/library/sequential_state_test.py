@@ -212,3 +212,12 @@ def test_sequential_state_interrupt_before_start():
         WaitState("w2", 2)
     ])
     seq.interrupt()
+
+
+def test_sequential_state_tick_race_condition():
+    seq = SequentialState("seq", children=[
+        WaitState("w1", 1),
+    ])
+    seq.start(None, None)
+    assert seq.tick(None) == seq
+    seq.wait()

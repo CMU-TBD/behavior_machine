@@ -65,7 +65,10 @@ class SequentialState(NestedState):
         next_state = super().tick(board)
         if next_state == self:
             with self._lock:
-                self._curr_child.tick(board)
+                # TODO: Reexamine if this will be a problem.
+                # There might be a race condition where sequential state is tick() before the actual execution.
+                if self._curr_child is not None:
+                    self._curr_child.tick(board)
         return next_state
 
     def get_debug_info(self) -> typing.Dict[str, typing.Any]:

@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- **[Fixed]** race condition in `SequentialState` where the internal states are `tick()` before they are set/initialized.
+
 ## [0.3.4] - 2021-05-24
 - **[Added]** Added example of the visualization on first page.
 - **[Added]** `behavior_machine.visualization` which has function `visualize_behavior_machine` that can visualize any machine and it's subcomponents.

@@ -1,8 +1,9 @@
 # Changelog
 
 ## [Unreleased]
-- **[Fixed]** race condition in `SequentialState` where the internal states are `tick()` before they are set/initialized.
+- **[Added]** `SelectorState` and `SequentialState` now has a flowout value which is from the last `succcess` state, None otherwise.
 - **[Changed]** `add_transition_on_complete` now has option to not ignore exceptions (default is always not).
+- **[Fixed]** race condition in `SequentialState` where the internal states are `tick()` before they are set/initialized.
 
 ## [0.3.4] - 2021-05-24
 - **[Added]** Added example of the visualization on first page.

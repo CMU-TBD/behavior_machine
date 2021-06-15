@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - **[Fixed]** race condition in `SequentialState` where the internal states are `tick()` before they are set/initialized.
+- **[Changed]** `add_transition_on_complete` now has option to not ignore exceptions (default is always not).
 
 ## [0.3.4] - 2021-05-24
 - **[Added]** Added example of the visualization on first page.

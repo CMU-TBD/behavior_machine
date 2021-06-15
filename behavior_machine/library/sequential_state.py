@@ -25,7 +25,7 @@ class SequentialState(NestedState):
             child._status = StateStatus.NOT_RUNNING
         return super().pre_execute()
 
-    def execute(self, board: Board):
+    def execute(self, board: Board) -> StateStatus:
         flow_val = self.flow_in
         # execute each children one by one in order
         for child in self._children:
@@ -45,8 +45,9 @@ class SequentialState(NestedState):
                 return StateStatus.EXCEPTION
             elif status != StateStatus.SUCCESS:
                 return status
-            # update flow_val
+            # update flow_val & set the flow out to be the current flow
             flow_val = self._curr_child.flow_out
+            self.flow_out = flow_val
         return StateStatus.SUCCESS
 
     def interrupt(self, timeout=None):

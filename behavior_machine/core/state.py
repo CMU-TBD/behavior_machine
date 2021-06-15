@@ -114,7 +114,7 @@ class State():
             return False
         self.add_transition(timepassed, next_state)
 
-    def add_transition_on_complete(self, next_state: 'State') -> None:
+    def add_transition_on_complete(self, next_state: 'State', ignore_exeception: bool = False) -> None:
         """Add transition to this state where when the state finishes execution regardless of output,
         it move tos the given state.
 
@@ -122,8 +122,11 @@ class State():
         ----------
         next_state : State
             State to transition to
+        ignore_exeception: bool
+            Whether to also ignore exceptions
         """
-        self.add_transition(lambda x, y: not x._run_thread.is_alive(), next_state)
+        self.add_transition(lambda x, y: not x._run_thread.is_alive()
+                            and (ignore_exeception or not x.check_status(StateStatus.EXCEPTION)), next_state)
 
     def add_transition_on_success(self, next_state: 'State') -> None:
         """Add transition to this state where when it is succesfully, move to the given state.

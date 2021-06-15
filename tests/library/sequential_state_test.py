@@ -1,10 +1,5 @@
-import time
-import sys
-import io
-import pytest
-
 from behavior_machine.core import Machine, State, StateStatus, Board
-from behavior_machine.library import SequentialState, PrintState, IdleState, WaitState
+from behavior_machine.library import SequentialState, PrintState, IdleState, WaitState, SetFlowState
 
 
 def test_sequential_state(capsys):
@@ -154,6 +149,7 @@ def test_sequential_debug_info():
     assert info['children'][1]['status'] == StateStatus.RUNNING
     seqs.wait()
 
+
 def test_repeat_sequential_state():
     w1 = WaitState('w1', 0.3)
     w2 = WaitState('w2', 0.3)
@@ -168,6 +164,7 @@ def test_repeat_sequential_state():
     info = seqs.get_debug_info()
     assert info['children'][0]['status'] == StateStatus.RUNNING
     assert info['children'][1]['status'] == StateStatus.NOT_RUNNING
+
 
 def test_sequential_state_flow(capsys):
 
@@ -187,16 +184,16 @@ def test_sequential_state_flow(capsys):
                 print("one")
                 return StateStatus.SUCCESS
             else:
-                assert self.flow_in == None
+                assert self.flow_in is None
                 print("two")
                 return StateStatus.FAILED
-    
+
     ps = PreState("pre")
     ws = WaitState("ws1", 0.1)
     rs = ReceiveState("rs")
     es = IdleState("es")
     seqs = SequentialState('seqs', [rs, ws])
-    
+
     ps.add_transition_on_complete(seqs)
     seqs.add_transition_on_success(seqs)
     seqs.add_transition_on_failed(es)
@@ -205,6 +202,7 @@ def test_sequential_state_flow(capsys):
     me.start(None)
     me.wait()
     assert capsys.readouterr().out == "one\ntwo\n"
+
 
 def test_sequential_state_interrupt_before_start():
     seq = SequentialState("seq", children=[
@@ -221,3 +219,28 @@ def test_sequential_state_tick_race_condition():
     seq.start(None, None)
     assert seq.tick(None) == seq
     seq.wait()
+
+
+def test_sequence_state_flow():
+
+    class FailedState(State):
+        def execute(self, board: Board) -> StateStatus:
+            self.flow_out = "Failed"
+            return StateStatus.FAILED
+
+    selector = SequentialState("selector", children=[
+        SetFlowState("s1", "firstState"),
+        FailedState("f1"),
+        SetFlowState("s2", "secondState"),
+    ])
+    selector.start(None)
+    selector.wait()
+    assert selector.flow_out == "firstState"
+
+    selector = SequentialState("selector", children=[
+        SetFlowState("s1", "firstState"),
+        SetFlowState("s2", "secondState"),
+    ])
+    selector.start(None)
+    selector.wait()
+    assert selector.flow_out == "secondState"

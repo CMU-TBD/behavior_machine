@@ -1,10 +1,6 @@
-import time
-import sys
-import io
-import pytest
-
-from behavior_machine.core import Machine, State, StateStatus, Board, state_status
-from behavior_machine.library import SequentialState, PrintState, IdleState, WaitState, SelectorState
+from behavior_machine.library.common_state import SetFlowState
+from behavior_machine.core import Machine, State, StateStatus, Board
+from behavior_machine.library import PrintState, IdleState, SelectorState
 
 
 def test_selector_state(capsys):
@@ -30,12 +26,13 @@ def test_selector_state(capsys):
 
     assert capsys.readouterr().out == "failed1\nPrint2\n"
 
+
 def test_selector_state_all_failed():
 
     class FailState(State):
         def execute(self, board: Board) -> StateStatus:
             return StateStatus.FAILED
-    
+
     fs1 = FailState("f1")
     fs2 = FailState("f2")
     fs3 = FailState("f3")
@@ -51,3 +48,36 @@ def test_selector_state_all_failed():
     assert fs2.check_status(StateStatus.FAILED)
     assert fs3.check_status(StateStatus.FAILED)
     assert sm.check_status(StateStatus.FAILED)
+
+
+def test_selector_state_flow():
+
+    class FailedState(State):
+        def execute(self, board: Board) -> StateStatus:
+            self.flow_out = "Failed"
+            return StateStatus.FAILED
+
+    selector = SelectorState("selector", children=[
+        FailedState("failed"),
+        SetFlowState("s1", "firstState"),
+        SetFlowState("s2", "secondState"),
+    ])
+    selector.start(None)
+    selector.wait()
+    assert selector.flow_out == "firstState"
+
+
+def test_selector_state_flow_all_failed():
+
+    class FailedState(State):
+        def execute(self, board: Board) -> StateStatus:
+            self.flow_out = "Failed"
+            return StateStatus.FAILED
+
+    selector = SelectorState("selector", children=[
+        FailedState("failed"),
+        FailedState("failed2"),
+    ])
+    selector.start(None)
+    selector.wait()
+    assert selector.flow_out is None

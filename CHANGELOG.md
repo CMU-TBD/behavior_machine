@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- **[Fixed]** condition in `AtLeastOneState` where other states aren't destroyed when exiting under success condition.
+
 ## [0.3.5] - 2021-06-15
 - **[Added]** `SelectorState` and `SequentialState` now has a flowout value which is from the last `succcess` state, None otherwise.
 - **[Changed]** `add_transition_on_complete` now has option to not ignore exceptions (default is always not).

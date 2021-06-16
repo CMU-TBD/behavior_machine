@@ -30,7 +30,6 @@ class ParallelState(NestedState):
         self._child_exception = False
         return super().pre_execute()
 
-
     def interrupt(self, timeout=None):
         # set our own flag to be true
         self._interupted_event.set()
@@ -57,10 +56,9 @@ class ParallelState(NestedState):
 
     def execute(self, board: Board) -> StateStatus:
 
-        # execute all the children as new threads
+        # start each child.
         for child in self._children:
-            # start the children, because
-            # each child starts their own thread, no extra management required
+            # because each child starts their own thread, no extra management required.
             child.start(board)
 
         # we delegate the checking of children state to the tick function OR execute, we wait here
@@ -71,17 +69,22 @@ class ParallelState(NestedState):
         if self.is_interrupted():
             return StateStatus.INTERRUPTED
 
-        # if exception occur in one of the states
+        # now we close down all the states that still running
+        for child in self._children:
+            if child.check_status(StateStatus.RUNNING):
+                if not child.interrupt(5):
+                    print(f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
+                        Zombie threads likely", file=sys.stderr)
+            elif child.check_status(StateStatus.EXCEPTION):
+                # this is the child that thrown an exception
+                # we propergate the information upwards.
+                self.propergate_exception_information(child)
+
+        # if an exception occur in one of the child states
         if self._child_exception:
-            # first make sure all of the states are interrupted
-            for child in self._children:
-                if child.check_status(StateStatus.RUNNING):
-                    child.interrupt()
-                elif child.check_status(StateStatus.EXCEPTION):
-                    self.propergate_exception_information(child)
-            # return the exception state
             return StateStatus.EXCEPTION
 
+        # based on the criteria, return the status
         return self._statestatus_criteria()
 
     def tick(self, board: Board):

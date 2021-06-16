@@ -43,17 +43,22 @@ def test_atleastone_interrupt(capsys):
             print("HelloWorld")
             return StateStatus.SUCCESS
 
+    wp = WaitAndPrint("ws")
     one = AtLeastOneState("one", children=[
+        wp,
         PrintState('p5', "ps5"),
-        WaitAndPrint("ws")
     ])
-    es = IdleState("endState")
-    one.add_transition_on_success(es)
-    exe = Machine("xe", one, end_state_ids=["endState"], rate=10)
-    exe.run()
+    one.start(None)
+    for i in range(0, 10):
+        one.tick(None)
+        time.sleep(0.1)
+    assert one.wait(1)
 
     assert capsys.readouterr().out == "ps5\n"
     assert interrupted
+    assert StateStatus.INTERRUPTED == wp._status
+    assert wp.is_interrupted()
+    assert not wp._run_thread.is_alive()
 
 
 def test_checking_too_fast():
@@ -63,7 +68,6 @@ def test_checking_too_fast():
         def execute(self, board: Board) -> StateStatus:
             time.sleep(1)
             return StateStatus.SUCCESS
-        
 
     one = AtLeastOneState("one", children=[
         SuccessState("is1"),
@@ -74,4 +78,3 @@ def test_checking_too_fast():
     exe.run(None)
 
     assert one._status == StateStatus.SUCCESS
-

@@ -1,7 +1,4 @@
 import time
-import sys
-import io
-import pytest
 import typing
 
 from behavior_machine.core import Machine, State, StateStatus, Board
@@ -59,6 +56,36 @@ def test_atleastone_interrupt(capsys):
     assert StateStatus.INTERRUPTED == wp._status
     assert wp.is_interrupted()
     assert not wp._run_thread.is_alive()
+
+
+def test_at_least_one_failed(capsys):
+
+    class WaitAndPrint(State):
+        def execute(self, board: Board) -> typing.Optional[StateStatus]:
+            time.sleep(1)
+            print("Hi")
+            return StateStatus.SUCCESS
+
+    class FailedState(State):
+        def execute(self, board: Board) -> StateStatus:
+            return StateStatus.FAILED
+
+    wp = WaitAndPrint("ws")
+    fs = FailedState("f")
+    one = AtLeastOneState("one", children=[
+        wp,
+        fs,
+    ])
+    one.start(None)
+    for i in range(0, 20):
+        one.tick(None)
+        time.sleep(0.1)
+    assert one.wait(1)
+
+    assert capsys.readouterr().out == "Hi\n"
+    assert wp._status == StateStatus.SUCCESS
+    assert one._status == StateStatus.SUCCESS
+    assert fs._status == StateStatus.FAILED
 
 
 def test_checking_too_fast():

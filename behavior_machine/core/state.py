@@ -203,9 +203,12 @@ class State():
             return not self._run_thread.is_alive()
         return True
 
+    def signal_interrupt(self):
+        self._interupted_event.set()
+
     def interrupt(self, timeout: float = None) -> bool:
         """Interrupts the current execution of the state.
-        Once interrupt, this state would try to stop as 
+        Once interrupt, this state would try to stop as
         soon as possible
 
         Parameters
@@ -219,7 +222,7 @@ class State():
             True if the state is no longer running or interrupted. False if timeout.
         """
         # signal the execute method to be interrupted.
-        self._interupted_event.set()
+        self.signal_interrupt()
         if self._run_thread is not None:
             if self._run_thread.is_alive():
                 self._run_thread.join(timeout)

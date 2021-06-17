@@ -1,11 +1,21 @@
 import time
-import sys
-import io
-import pytest
 
-from behavior_machine.core import Board
 from behavior_machine.core import State, Machine, StateStatus
 from behavior_machine.library import WaitState, ParallelState, IdleState
+
+
+class FailAfterSecState(State):
+    def __init__(self, timing):
+        self._timing = timing
+        super().__init__(f"failed-{timing}")
+
+    def execute(self, board):
+        start_time = time.time()
+        while ((time.time() - start_time) < self._timing):
+            if self.is_interrupted():
+                return StateStatus.INTERRUPTED
+            time.sleep(0.01)
+        return StateStatus.FAILED
 
 
 def test_parallel_state_individual(capsys):
@@ -54,13 +64,8 @@ def test_parallel_state_in_machine(capsys):
 
 def test_parallel_one_state_fails(capsys):
 
-    class FailAfter1SecState(State):
-        def execute(self, board):
-            time.sleep(1)
-            return StateStatus.FAILED
-
     ws = WaitState("ws1", 5)
-    fs = FailAfter1SecState("fs")
+    fs = FailAfterSecState(1)
     es = IdleState("es")
     fes = IdleState("fs-terminal")
     pm = ParallelState('pm', [ws, fs])
@@ -80,6 +85,24 @@ def test_parallel_one_state_fails(capsys):
     assert exe.wait(2)
     assert exe._curr_state == fes
     assert not pm._run_thread.is_alive()
+
+
+def test_parallel_multiple_failed(capsys):
+
+    fs1 = FailAfterSecState(1)
+    fs15 = FailAfterSecState(1.5)
+    ws = WaitState("wait2", 2)
+    pp = ParallelState("pp", children=[fs1, fs15, ws])
+    pp.start(None)
+    for i in range(0, 21):
+        pp.tick(None)
+        if pp.wait(0.1):
+            break
+    assert fs1._status == StateStatus.FAILED
+    assert fs15._status == StateStatus.INTERRUPTED
+    assert ws._status == StateStatus.INTERRUPTED
+    assert pp._status == StateStatus.FAILED
+
 
 def test_parallel_one_state_exception(capsys):
 
@@ -110,13 +133,14 @@ def test_parallel_one_state_exception(capsys):
     assert exe.check_status(StateStatus.EXCEPTION)
     assert not pm._run_thread.is_alive()
 
+
 def test_parallel_one_state_throw_exception(capsys):
 
     class ExceptionAfter1SecState(State):
         def execute(self, board):
             time.sleep(1)
             raise Exception("test exception")
-            #return StateStatus.EXCEPTION
+            # return StateStatus.EXCEPTION
 
     ws = WaitState("ws1", 5)
     fs = ExceptionAfter1SecState("fs")
@@ -180,6 +204,7 @@ def test_interrupt_in_parallel_state(capsys):
     assert ws._status == StateStatus.INTERRUPTED
     assert ws2._status == StateStatus.INTERRUPTED
     assert not pm._run_thread.is_alive()
+
 
 def test_parallel_state_performance(capsys):
 

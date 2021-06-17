@@ -8,13 +8,13 @@ class ParallelState(NestedState):
 
     _children: typing.List[State]
     _thread_list: list
-    _children_complete_event: threading.Event
+    _state_complete_event: threading.Event
     _child_exception: bool
 
     def __init__(self, name, children: list = None):
         super(ParallelState, self).__init__(name)
         self._children = [] if children is None else children
-        self._children_complete_event = threading.Event()
+        self._state_complete_event = threading.Event()
         self._child_exception = False
 
     def add_children(self, state: State):
@@ -26,23 +26,39 @@ class ParallelState(NestedState):
         for child in self._children:
             child._status = StateStatus.NOT_RUNNING
         # clear the event flag before starting
-        self._children_complete_event.clear()
+        self._state_complete_event.clear()
         self._child_exception = False
         return super().pre_execute()
+
+    def _interrupt_running_children(self, timeout=None) -> bool:
+        # we send the interrupt signal to all children that are running
+        for child in self._children:
+            if child.check_status(StateStatus.RUNNING):
+                child.signal_interrupt()
+        # now we wait for each children
+        failed = False
+        for child in self._children:
+            if not child.interrupt(timeout):
+                print(f"ERROR {self.get_debug_name()} unable to complete Interrupt Action \
+                    for child {child.get_debug_name()} Zombie threads likely", file=sys.stderr)
+                failed = True
+            if child.check_status(StateStatus.EXCEPTION):
+                # this is the child that thrown an exception
+                # we propergate the information upwards.
+                self.propergate_exception_information(child)
+        return not failed
+
+    def _wait_all_child_process_done(self, timeout):
+        for child in self._children:
+            if not child.wait(timeout):
+                return False
+        return True
 
     def interrupt(self, timeout=None):
         # set our own flag to be true
         self._interupted_event.set()
-        # send interrupt signal to all the children if they are running
-        # we send the signal first to concurrenly deal with all the children
-        for child in self._children:
-            child._interupted_event.set()
-        # we wait for each of the child to finish
-        for child in self._children:
-            if not child.interrupt(timeout):
-                return False
-        # set the complete loop
-        self._children_complete_event.set()
+        # set that the state should be finishing
+        self._state_complete_event.set()
         # we wait for the main thread to stop
         return super().interrupt(timeout=timeout)
 
@@ -54,6 +70,9 @@ class ParallelState(NestedState):
                 all_success = False
         return StateStatus.SUCCESS if all_success else StateStatus.FAILED
 
+    def _tick_child_complete_function(self, child_state: State) -> bool:
+        return child_state.check_status(StateStatus.FAILED)
+
     def execute(self, board: Board) -> StateStatus:
 
         # start each child.
@@ -61,29 +80,16 @@ class ParallelState(NestedState):
             # because each child starts their own thread, no extra management required.
             child.start(board)
 
-        # we delegate the checking of children state to the tick function OR execute, we wait here
-        # TODO This might be a bad pattern, cause it will need a tick to transition out. This defers from SequentialState
-        self._children_complete_event.wait()
-
-        # if we got interupted out return INTERUPTED
+        # we wait for when this state should be completed
+        self._state_complete_event.wait()
+        # we now interrupt and stop all remaining running state
+        self._interrupt_running_children()
+        # if we were interrupted
         if self.is_interrupted():
             return StateStatus.INTERRUPTED
-
-        # now we close down all the states that still running
-        for child in self._children:
-            if child.check_status(StateStatus.RUNNING):
-                if not child.interrupt(5):
-                    print(f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
-                        Zombie threads likely", file=sys.stderr)
-            elif child.check_status(StateStatus.EXCEPTION):
-                # this is the child that thrown an exception
-                # we propergate the information upwards.
-                self.propergate_exception_information(child)
-
         # if an exception occur in one of the child states
         if self._child_exception:
             return StateStatus.EXCEPTION
-
         # based on the criteria, return the status
         return self._statestatus_criteria()
 
@@ -92,35 +98,36 @@ class ParallelState(NestedState):
         # check if we should transition out of this state
         next_state = super().tick(board)
         if next_state == self:
-            # we are staying in this state, tick each of the child
+            # we are staying in this state.
+            # If we are currently trying to resolve interrupt, return self.
+            if self.is_interrupted():
+                return self
+            # we are staying in this state, tick each of the children.
             at_least_one_running = False
             for child in self._children:
                 # if the child is running, tick it
                 if child.check_status(StateStatus.RUNNING):
                     at_least_one_running = True
                     child.tick(board)
-                elif child.check_status(StateStatus.FAILED):
-                    self._children_complete_event.set()
+                elif self._tick_child_complete_function(child):
+                    # one state failed, this state is now over.
+                    self._state_complete_event.set()
                 elif child.check_status(StateStatus.EXCEPTION):
                     self.propergate_exception_information(child)
                     self._child_exception = True
-                    self._children_complete_event.set()
+                    self._state_complete_event.set()
                 elif child.check_status(StateStatus.NOT_RUNNING):
                     # This is likely an edge case where the child hasn't start being check yet.
                     at_least_one_running = True
             # if all child already done, we need to let the main process knows
             if not at_least_one_running:
-                self._children_complete_event.set()
+                self._state_complete_event.set()
             # return itself since nothing transitioned
             return self
         else:
-            # we are going to a new start, interrupt everthing that is going on
-            if not self.interrupt():
-                # we wasn't able to complete the interruption.
-                # This is bad.. meaning there are bunch of zombie threads running about
-                print(
-                    f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
-                        Zombie threads likely", file=sys.stderr)
+            # we are transitioning out. let's interrupt the children running.
+            # TODO: this blocks the executing of the tick.
+            self.interrupt()
             return next_state
 
     def get_debug_info(self) -> typing.Dict[str, typing.Any]:

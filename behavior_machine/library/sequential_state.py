@@ -50,18 +50,6 @@ class SequentialState(NestedState):
             self.flow_out = flow_val
         return StateStatus.SUCCESS
 
-    def interrupt(self, timeout=None):
-        self._interupted_event.set()
-        with self._lock:
-            try:
-                self._curr_child.interrupt(timeout=timeout)
-            except (AttributeError):
-                # Attribution error happens if child node is empty
-                # Possible race condition at the beginning where interupt gets call before we start initializing
-                pass
-        # now we call the parent function to clear the running thread
-        return super().interrupt(timeout)
-
     def tick(self, board):
         next_state = super().tick(board)
         if next_state == self:
@@ -79,3 +67,17 @@ class SequentialState(NestedState):
         for child in self._children:
             self_info['children'].append(child.get_debug_info())
         return self_info
+
+    def wait_for_internal_states(self, timeout: float = None) -> bool:
+        return self._curr_child.wait(timeout)
+
+    def interrupt_internal_states(self, timeout: float = None) -> bool:
+        self._interupted_event.set()
+        with self._lock:
+            try:
+                return self._curr_child.interrupt(timeout=timeout)
+            except (AttributeError):
+                # Attribution error happens if child node is empty
+                # Possible race condition at the beginning where interupt gets call before we start initializing
+                pass
+        return True

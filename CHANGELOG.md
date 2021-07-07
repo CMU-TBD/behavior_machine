@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 - **[Changed]** streamlined `ParallelState` to prevent potential interrupt race issues. Enable `AtLeastOneState` to overwrite two function for its functionality.
+- **[Changed]** Added `wait_for_internal_states` and `interrupt_internal_states` prototype for nested states to simplify interruptions and running.
 - **[Fixed]** condition in `AtLeastOneState` where other states aren't destroyed when exiting under success condition.
 
 ## [0.3.5] - 2021-06-15

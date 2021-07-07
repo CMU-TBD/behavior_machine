@@ -30,7 +30,7 @@ class ParallelState(NestedState):
         self._child_exception = False
         return super().pre_execute()
 
-    def _interrupt_running_children(self, timeout=None) -> bool:
+    def interrupt_internal_states(self, timeout: float = None) -> bool:
         # we send the interrupt signal to all children that are running
         for child in self._children:
             if child.check_status(StateStatus.RUNNING):
@@ -48,7 +48,7 @@ class ParallelState(NestedState):
                 self.propergate_exception_information(child)
         return not failed
 
-    def _wait_all_child_process_done(self, timeout):
+    def wait_for_internal_states(self, timeout: float = None) -> bool:
         for child in self._children:
             if not child.wait(timeout):
                 return False
@@ -83,7 +83,7 @@ class ParallelState(NestedState):
         # we wait for when this state should be completed
         self._state_complete_event.wait()
         # we now interrupt and stop all remaining running state
-        self._interrupt_running_children()
+        self.interrupt_internal_states()
         # if we were interrupted
         if self.is_interrupted():
             return StateStatus.INTERRUPTED

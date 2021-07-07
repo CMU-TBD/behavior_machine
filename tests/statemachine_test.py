@@ -131,8 +131,8 @@ def test_end_case_delay(capsys):
 
 
 def test_machine_rate_slow():
-    w1 = WaitState("w1", 0.1) # execute at second 0
-    w2 = WaitState("w2", 0.1) # execute at second 2
+    w1 = WaitState("w1", 0.1)  # execute at second 0
+    w2 = WaitState("w2", 0.1)  # execute at second 2
     es = DummyState("endState")  # execute at second 4
     w1.add_transition_on_success(w2)
     w2.add_transition_on_success(es)
@@ -146,8 +146,8 @@ def test_machine_rate_slow():
 
 
 def test_machine_rate_fast():
-    w1 = WaitState("w1", 0.05) # execute at second 0
-    w2 = WaitState("w2", 0.05) # execute at second 0.1s
+    w1 = WaitState("w1", 0.05)  # execute at second 0
+    w2 = WaitState("w2", 0.05)  # execute at second 0.1s
     es = DummyState("endState")  # execute at second 0.2
     w1.add_transition_on_success(w2)
     w2.add_transition_on_success(es)
@@ -158,6 +158,7 @@ def test_machine_rate_fast():
     assert pytest.approx(duration, abs=1e-2) == 0.2
     assert w1._status == StateStatus.SUCCESS
     assert w2._status == StateStatus.SUCCESS
+
 
 def test_nested_machine(capsys):
 
@@ -252,9 +253,9 @@ def test_debugging_machine(caplog):
     mac.run()
     assert mac.is_end()
     assert len(caplog.records) == 3
-    assert caplog.records[0].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING" # This is at t=0
-    assert caplog.records[1].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING" # This is at t=1 
-    assert caplog.records[2].message == "[Base] mac(Machine) -- RUNNING\n  -> s2(DummyState) -- SUCCESS" # At the end
+    assert caplog.records[0].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING"  # This is at t=0
+    assert caplog.records[1].message == "[Base] mac(Machine) -- RUNNING\n  -> s1(WaitState) -- RUNNING"  # This is at t=1
+    assert caplog.records[2].message == "[Base] mac(Machine) -- RUNNING\n  -> s2(DummyState) -- SUCCESS"  # At the end
 
 
 def test_interrupt_machine(capsys):
@@ -264,6 +265,7 @@ def test_interrupt_machine(capsys):
     mac = Machine("mac", s1, ["s2"], debug=True, rate=1)
     mac.start(None)
     assert mac.interrupt()
+
 
 def test_flow_into_machine(capsys):
 

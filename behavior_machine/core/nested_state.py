@@ -26,25 +26,25 @@ class NestedState(State):
             self._exception_raised_state_name = f"{self._name}.{curr_state._name}"
 
     def _execute(self, board: Board):
-        # Right now when it fails nothing goes up
-        try:
-            self.pre_execute()
-            self._status = self.execute(board)
-            self.post_execute()
-        except Exception as e:
-            try:
-                self.interrupt()
-            except RuntimeError as e2:
-                if str(e2) != "cannot join current thread":
-                    raise e2
-                # this is a common exception because we are the current thread
-                # This level of exception often happen in the transition checking level
-            self._internal_exception = e
-            self._status = StateStatus.EXCEPTION
-        if self._status is None:
-            self._status = StateStatus.NOT_SPECIFIED
+        # use the base function
+        super()._execute(board)
+        if self._status == StateStatus.EXCEPTION:
+            # If the current state exits due to an exception. It is unclear
+            # if the lower/internal states stopped. We signal an interruption
+            # to stop them.
+            self.interrupt_internal_states()
+            self.wait_for_internal_states()
+
+    def interrupt(self, timeout: float = None) -> bool:
+        return (self.interrupt_internal_states(timeout) and super().interrupt(timeout=timeout))
 
     def print_debugging_info(self):
         super().print_debugging_info()
         if self._internal_exception is not None:
             print(self._exception_raised_state_name)
+
+    def wait_for_internal_states(self, timeout: float = None) -> bool:
+        raise NotImplementedError("All nested state need to implement this method to test for completion.")
+
+    def interrupt_internal_states(self, timeout: float = None) -> bool:
+        raise NotImplementedError("All nested state need to implement this method to interrupt internal states.")

@@ -134,7 +134,16 @@ class Machine(NestedState):
         self.start(board, flow_in)
         self.wait()
 
-    def interrupt(self, timeout: float = None) -> bool:
+    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
+
+        self_info = super().get_debug_info()
+        self_info['children'] = [self._curr_state.get_debug_info()]
+        return self_info
+
+    def wait_for_internal_states(self, timeout: float = None) -> bool:
+        return self._curr_state.wait(timeout)
+
+    def interrupt_internal_states(self, timeout: float = None) -> bool:
         # call interrupt for the nested class
         if not self._curr_state.interrupt(timeout):
             # unable to interrupt current state
@@ -142,10 +151,4 @@ class Machine(NestedState):
                 f"ERROR {self._name} of type {self.__class__} unable to complete Interrupt Action. \
                     Zombie threads likely", file=sys.stderr)
             return False
-        return super().interrupt(timeout)
-
-    def get_debug_info(self) -> typing.Dict[str, typing.Any]:
-
-        self_info = super().get_debug_info()
-        self_info['children'] = [self._curr_state.get_debug_info()]
-        return self_info
+        return True

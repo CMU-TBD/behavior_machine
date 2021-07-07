@@ -136,7 +136,7 @@ class State():
         next_state : State
             State to transition to.
         """
-        self.add_transition(lambda x, y: x._status == StateStatus.SUCCESS, next_state)
+        self.add_transition(lambda s, b: s._status == StateStatus.SUCCESS, next_state)
 
     def add_transition_on_failed(self, next_state: 'State') -> None:
         """Add transition to this state where when the state fails, move to the given state.
@@ -146,9 +146,9 @@ class State():
         next_state : State
             State to transition to
         """
-        self.add_transition(lambda x, y: x._status == StateStatus.FAILED, next_state)
+        self.add_transition(lambda s, b: s._status == StateStatus.FAILED, next_state)
 
-    def execute(self, board: Board) -> StateStatus:
+    def execute(self, board: Board) -> typing.Optional[StateStatus]:
         """All derived class should overwrite this method. It is run in a seperate thread when
         the state is running
 
@@ -196,7 +196,7 @@ class State():
         Returns
         -------
         bool
-            Whether the current state finished, if false, it means timedout.
+            Whether the current state finished, if false, it means timed out.
         """
         if self._run_thread is not None and self._run_thread.is_alive():
             self._run_thread.join(timeout)
@@ -286,9 +286,21 @@ class State():
         """
         return f"{self._name}({self.__class__.__name__})"
 
+    def pre_run(self):
+        pass
+
+    def post_run(self):
+        pass
+
     def pre_execute(self):
+        """This method is ran BEFORE the class's execute method. It is called
+        on the seperate thread, the same as the execute's thread.
+        """
         self._state_last_start_time = time.time()
 
     def post_execute(self):
+        """This method is ran AFTER the class's execute method. It is called
+        on the seperate thread, the same as the execute's thread.
+        """
         self._state_last_end_time = time.time()
         pass

@@ -1,8 +1,7 @@
 from behavior_machine.library.parallel_state import ParallelState
 import time
 
-from behavior_machine.core import Board, StateStatus, State, Machine, machine
-from behavior_machine.library import IdleState
+from behavior_machine.core import Board, StateStatus, State, Machine
 
 
 def test_repeat_node_in_machine_fast():
@@ -29,6 +28,7 @@ def test_repeat_node_in_machine_fast():
     # the performance of the computer might change this.
     assert counter >= (60 * 2) - 2
     assert counter <= (60 * 2) + 1
+
 
 def test_validate_transition_immediate():
 

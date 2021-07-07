@@ -1,5 +1,4 @@
 from behavior_machine.library import WaitState, IdleState
-import pytest
 
 from behavior_machine.core import Board
 from behavior_machine.core import State, StateStatus, Machine
@@ -144,6 +143,7 @@ def test_object_set_get(capsys):
     assert exe.is_end()
     assert exe._curr_state._status == StateStatus.SUCCESS
 
+
 def test_object_get_in_transition(capsys):
 
     class SetState(State):
@@ -188,8 +188,7 @@ def test_load_dictionary():
     assert b.get('k2') == 800
     # try replacing a previous value
     check_dict_2 = {
-        'k2':1000
+        'k2': 1000
     }
     b.load(check_dict_2)
     assert b.get('k2') == 1000
-

@@ -19,7 +19,8 @@ class Machine(NestedState):
     _debug_cb: typing.Callable[[typing.Dict[str, typing.Any]], None]
     _logger: logging.Logger
 
-    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None, logger: logging.Logger = None):
+    def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False,
+                 debug_cb=None, logger: logging.Logger = None):
         self._root = root
         self._curr_state = root
         self._end_state_ids = [] if end_state_ids is None else end_state_ids
@@ -71,7 +72,7 @@ class Machine(NestedState):
                 self.propergate_exception_information(self._curr_state)
                 return StateStatus.EXCEPTION
 
-            #TODO this part probably can be improved through better code + CPYTHON implementaions
+            # TODO this part probably can be improved through better code + CPYTHON implementaions
             # sleep for the remaining time
             passed_time = time.time() - start_time_tick
             if passed_time > self._rate:

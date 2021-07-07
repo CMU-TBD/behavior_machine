@@ -80,7 +80,7 @@ def test_simple_machine2(capsys):
     ps2.add_transition_on_success(ps3)
     exe = Machine("xe", ps1, rate=10)
     b = Board()
-    exe.start(b, manual_exec=True)
+    exe.start(b, manual_execute=True)
     assert capsys.readouterr().out == "print1\n"
     exe.update(b, wait=True)
     assert capsys.readouterr().out == "print2\n"
@@ -96,7 +96,7 @@ def test_chain_case():
     s2.add_transition_on_success(s3)
     exe = Machine("xe", s1, end_state_ids=["s3"], rate=10)
     b = Board()
-    exe.start(b, manual_exec=True)
+    exe.start(b, manual_execute=True)
     exe.update(b, True)
     assert not exe.is_end()
     exe.update(b, True)

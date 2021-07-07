@@ -70,8 +70,6 @@ def test_multiple_parallel_states():
     pp = ParallelState("parallel", child_states)
     exe = Machine('exe', pp, end_state_ids=['parallel'], rate=100)
     start_time = time.time()
-    exe.start(None)
-    exe.wait()
+    exe.run(None)
     elapsed_time = time.time() - start_time
     assert elapsed_time < (1/10)
-

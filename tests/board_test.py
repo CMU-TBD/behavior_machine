@@ -92,25 +92,23 @@ def test_board_exist_func():
 
 
 def test_internal_set():
-    s1 = DummyState('s1')
     set_state = SetState('set', 'key', 'hello')
-    s1.add_transition_on_success(set_state)
-    exe = Machine("xe", s1)
+    end_state = DummyState("end")
+    set_state.add_transition_on_success(end_state)
+    exe = Machine("xe", set_state, end_state_ids=["end"])
     b = Board()
-    exe.start(b, manual_exec=True)
-    exe.update(b, wait=True)
+    exe.run(b)
     assert b.get('key') == 'hello'
 
 
 def test_internal_get():
-    s1 = DummyState('s1')
     get_state = GetState('set', 'key')
-    s1.add_transition_on_success(get_state)
-    exe = Machine("xe", s1)
+    end_state = DummyState("end")
+    get_state.add_transition_on_success(end_state)
+    exe = Machine("xe", get_state, end_state_ids=["end"])
     b = Board()
     b.set("key", "hello_get")
-    exe.start(b, manual_exec=True)
-    exe.update(b, wait=True)
+    exe.run(b)
     assert b.get('output') == 'hello_get'
 
 
@@ -145,8 +143,6 @@ def test_object_set_get(capsys):
     exe.run()
     assert exe.is_end()
     assert exe._curr_state._status == StateStatus.SUCCESS
-    #assert exe._curr_state.check_status(StateStatus.SUCCESS)
-
 
 def test_object_get_in_transition(capsys):
 

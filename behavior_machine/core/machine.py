@@ -13,7 +13,6 @@ class Machine(NestedState):
 
     _root: State  # Starting state
     _curr_state: State  # Nested state in the machine
-    _started: bool  # Whether the state machine has started
     _end_state_ids: list  # IDs of end states
     _rate: float  # Rate to tick
     _debug_flag: bool
@@ -23,7 +22,6 @@ class Machine(NestedState):
     def __init__(self, name, root, end_state_ids=None, rate=1.0, debug: bool = False, debug_cb=None, logger: logging.Logger = None):
         self._root = root
         self._curr_state = root
-        self._started = False
         self._end_state_ids = [] if end_state_ids is None else end_state_ids
         self._rate = 1.0 / rate
         self._debug_flag = debug
@@ -31,19 +29,21 @@ class Machine(NestedState):
         self._logger = logger
         super(Machine, self).__init__(name)
 
-    def start(self, board: Board, flow_in: typing.Any = None, manual_exec=False) -> None:
-        # Overwrites States' start
-        self._status = StateStatus.RUNNING
-        # Method that is called when first enter this state.
+    def start(self, board: Board, flow_in: typing.Any = None, manual_execute: bool = False) -> None:
+        self._status = StateStatus.UNKNOWN
         self._curr_state = self._root
-        self._interupted_event.clear()
-        # start the current state first before
-        self._curr_state.start(board, flow_in)
-        # start the execution pipeline which automatically runs a state machine.
-        if not manual_exec:
-            super().start(board)
+        # if manual execution, the machine needs to be update manually.
+        if not manual_execute:
+            super().start(board, flow_in)
+        else:
+            # because we didn't start the execution function, we need to do
+            # some book keeping
+            self.pre_execute()
+            self._curr_state.start(board, flow_in)
 
     def execute(self, board: Board):
+        # start the root state
+        self._curr_state.start(board, self.flow_in)
         # tick the internal states
         while not self.is_interrupted():
             # start time
@@ -91,7 +91,6 @@ class Machine(NestedState):
             if transition[0](self, board):
                 # this means this machine is being transitioned out.
                 # tell the current state to stop.
-                self._curr_state.interrupt()
                 self.interrupt()
                 transition[1].start(board)
                 return transition[1]
@@ -117,8 +116,8 @@ class Machine(NestedState):
             (self._curr_state._name == self._end_state_ids or self._curr_state._name in self._end_state_ids)
 
     def run(self, board: Board = None, flow_in: typing.Any = None) -> None:
-        """Run the machine starting from the initial/root state. This method should only be called
-        from the outside of the state machine.
+        """Run the machine starting from the initial/root state till the end. This method should only be called
+        from the outside of the state machine. This is a blocking call.
 
         Parameters
         ----------

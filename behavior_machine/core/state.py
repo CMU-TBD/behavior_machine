@@ -177,8 +177,7 @@ class State():
             self._status = StateStatus.NOT_SPECIFIED
 
     def start(self, board: Board, flow_in: typing.Any = None) -> None:
-
-        self._status = StateStatus.RUNNING
+        self._status = StateStatus.UNKNOWN
         self.flow_in = flow_in
         self.flow_out = None
         self._interupted_event.clear()
@@ -198,7 +197,17 @@ class State():
         bool
             Whether the current state finished, if false, it means timed out.
         """
-        if self._run_thread is not None and self._run_thread.is_alive():
+        if self._run_thread is None:
+            raise RuntimeError(f"wait in {self.get_debug_name()} should be called after start is runned.")
+        if self._status == StateStatus.UNKNOWN:
+            # There is an edge case where the run thead is initialized but it haven't started.
+            # we sleep for 0.5 seconds and see if the thread comes back.
+            if self._interupted_event.wait(0.5):
+                # we got interrupted while waiting.
+                return True
+            if self._status == StateStatus.UNKNOWN:
+                raise RuntimeError(f"{self.get_debug_name()} stuck in UNKNOWN.")
+        if self._run_thread.is_alive():
             self._run_thread.join(timeout)
             return not self._run_thread.is_alive()
         return True
@@ -296,6 +305,7 @@ class State():
         """This method is ran BEFORE the class's execute method. It is called
         on the seperate thread, the same as the execute's thread.
         """
+        self._status = StateStatus.RUNNING
         self._state_last_start_time = time.time()
 
     def post_execute(self):

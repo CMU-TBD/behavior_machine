@@ -54,7 +54,7 @@ class ParallelState(NestedState):
                 return False
         return True
 
-    def interrupt(self, timeout=None):
+    def interrupt(self, timeout: float = None) -> bool:
         # set our own flag to be true
         self._interupted_event.set()
         # set that the state should be finishing

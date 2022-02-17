@@ -5,3 +5,4 @@ from .parallel_state import ParallelState
 from .selector_state import SelectorState
 from .common_state import SetFlowState, SetFlowFromBoardState, SaveFlowState, SetBoardState, GetBoardState
 from .atleastone_state import AtLeastOneState
+from .probability_states import RandomPickState

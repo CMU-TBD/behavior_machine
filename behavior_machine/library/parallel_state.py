@@ -13,7 +13,7 @@ class ParallelState(NestedState):
 
     def __init__(self, name, children: list = None):
         super(ParallelState, self).__init__(name)
-        self._children = [] if children is None else children
+        self._children = [] if children is None else list(filter(None, children))
         self._state_complete_event = threading.Event()
         self._child_exception = False
 

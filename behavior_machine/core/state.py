@@ -30,8 +30,8 @@ class State():
     _state_last_start_time: float
     _state_last_end_time: float
 
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, name: str = ""):
+        self._name = name if name != "" else self.__class__.__name__
         self._transitions = []
         self._run_thread = None
         self._interupted_event = threading.Event()
@@ -79,6 +79,16 @@ class State():
     def checkStatus(self, compare: StateStatus) -> bool:
         warnings.warn("use check_status instead", DeprecationWarning)
         return self.check_status(compare)
+
+    def get_status(self) -> StateStatus:
+        """Get the state's status if completed.
+
+        Returns
+        -------
+        StateStatus
+            The status of the state.
+        """
+        return self._status
 
     def add_transition(self, cond: typing.Callable[['State', Board], bool], next_state: 'State') -> None:
         """Add transition to the state. Provide a checking method (cond) that when returns true, will

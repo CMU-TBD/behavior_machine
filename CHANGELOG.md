@@ -1,7 +1,11 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2022-02-16
+- **[Added]** `RandomPickState` which randomly pick one of the children to be executed. All children has uniform probability being picked. 
+- **[Added]** added `get_status` method in `State` which return the status of the State.
+- **[Changed]** name for `State` is now optional, the default is its class name.
 - **[Changed]** streamlined `ParallelState` to prevent potential interrupt race issues. Enable `AtLeastOneState` to overwrite two function for its functionality.
+- **[Changed]** `ParallelState` now ignores empty/None States if passed in as children.
 - **[Fixed]** condition in `AtLeastOneState` where other states aren't destroyed when exiting under success condition.
 
 ## [0.3.5] - 2021-06-15
